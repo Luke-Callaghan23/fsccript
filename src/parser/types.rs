@@ -1,7 +1,7 @@
 
 
 pub mod types {
-    use crate::transpiler::transpiler::Transpilation;
+    use crate::transpiler::types::types::Transpilation;
 
     /// Structure of a .fjs file compilation target 
     /// Contains the name of the raw file: file_name, a FileContent variant 

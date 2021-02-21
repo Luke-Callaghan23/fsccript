@@ -1,4 +1,4 @@
-pub mod transpiler {
+pub mod types {
     use std::fmt;
     pub enum Transpilation {
         Original   ( String ),
@@ -19,4 +19,6 @@ pub mod transpiler {
         }
     }
 
+
+    
 }
