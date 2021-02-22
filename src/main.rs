@@ -1,14 +1,14 @@
 use std::env;
 
 mod parser;
-use parser::types::*;
-use parser::types::types::{
+use parser::*;
+use parser::types::{
     CompilationTarget
 };
 
 mod io;
-use io::read_files::read::process_files;
-use io::write_files::write::write_all;
+use io::read_files::process_files;
+use io::write_files::write_all;
 
 
 extern crate itertools;

@@ -1,5 +1,3 @@
-#![crate_name = "Parser"]
-
 
 pub mod parser {
     use crate::types::{
