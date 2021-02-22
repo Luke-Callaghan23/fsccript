@@ -11,7 +11,9 @@ use io::read_files::process_files;
 use io::write_files::write_all;
 
 
+/// # External crates for fscript -- 
 extern crate itertools;
+extern crate regex;
 
 mod transpiler;
 

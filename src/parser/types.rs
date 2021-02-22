@@ -34,8 +34,8 @@ pub enum FileContent {
 /// In the output file, the non-compilable code and fully compiled code
 ///         will be zippered together
 pub struct ParsedFile {
-    pub size:              usize,               // size of the raw file
-    pub vanilla_sections:  Vec<String>,         // vector of the sections of vanilla code that will be pasted directly into the output file
+    pub size:                usize,             // size of the raw file
+    pub vanilla_sections:    Vec<String>,       // vector of the sections of vanilla code that will be pasted directly into the output file
     pub compilable_sections: Vec<Compilable>,   // vector of the .fjs expressions that will be compiled before being pasted into the output file
 }
 

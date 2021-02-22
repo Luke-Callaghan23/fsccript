@@ -10,9 +10,11 @@ mod tests {
 
         let string: &str = "%";
 
-        println!("{:?}", lookup_token(string.as_bytes(), &lookup_table));
+        let res = lookup_token(string.as_bytes(), &lookup_table);
 
-        assert_eq!(lookup_token(string.as_bytes(), &lookup_table), TokensOfInterest::Mod);
+        println!("{:?}", res);
+
+        assert_eq!(res, TokensOfInterest::Mod);
     }
     
     #[test]
@@ -138,6 +140,10 @@ mod tests {
             ("of", TokensOfInterest::Of),
             ("new", TokensOfInterest::New), 
             (".", TokensOfInterest::Dot),
+            ("if", TokensOfInterest::If),
+            ("switch", TokensOfInterest::Switch),
+            ("]", TokensOfInterest::CloseBrack),
+            (")", TokensOfInterest::CloseParen),
         ];
 
         for (string, target) in tests {
