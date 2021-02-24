@@ -1,19 +1,19 @@
 use std::fmt;
 use crate::parser::types::FileContent;
 
-pub enum Transpilation {
+pub enum TranspileContents {
     Original   ( String ),
     Transpiled ( String )
 }
 
 /// # Display implementation for the transpilation struct
-impl fmt::Display  for Transpilation {
+impl fmt::Display  for TranspileContents {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Transpilation::Original ( original ) => {
+            TranspileContents::Original ( original ) => {
                 write!(f, "ORIGINAL CONTENT: {}", original)
             },
-            Transpilation::Transpiled ( transpiled ) => {
+            TranspileContents::Transpiled ( transpiled ) => {
                 write!(f, "TRANSPILED CONTENT: {}", transpiled)
             }
         }

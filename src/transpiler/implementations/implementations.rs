@@ -1,4 +1,4 @@
-use crate::transpiler::types::Transpilation;
+use crate::transpiler::types::TranspileContents;
 
 use super::{fscript_if, fscript_switch};
 
@@ -8,15 +8,14 @@ pub enum CompileType {
     If    ,                                     // compilation targeting an if, or if-else statement
     Switch,                                     // compilation targeting a switch statement
     // <new compilation type here>
-    None                                        // not compilable
 }
 
 
 pub struct CompilableStruct {
     pub comp_type: CompileType,
     pub check: Box<dyn Fn(&[u8], usize) -> bool>,
-    pub parse: Box<dyn Fn(&[u8]) -> (Transpilation, &[u8])>,    
-    pub transpile: Box<dyn Fn(Transpilation) -> Transpilation>
+    pub parse: Box<dyn Fn(&[u8]) -> (TranspileContents, &[u8])>,    
+    pub transpile: Box<dyn Fn(TranspileContents) -> TranspileContents>
 }
 
 

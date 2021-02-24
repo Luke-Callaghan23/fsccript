@@ -1,5 +1,5 @@
 use crate::transpiler::implementations::implementations::{CompileType, CompilableStruct};
-use crate::transpiler::types::Transpilation;
+use crate::transpiler::types::TranspileContents;
 use std::str;
 
 pub fn implement_switch () -> CompilableStruct {
@@ -16,10 +16,10 @@ fn check_switch (data: &[u8], _start_index: usize) -> bool {
     String::from(str::from_utf8(data).unwrap()).starts_with("switch")
 }
 
-fn parse_switch (data: &[u8]) -> (Transpilation, &[u8]) {
-    ( Transpilation::Original(String::from("")), b"" )
+fn parse_switch (data: &[u8]) -> (TranspileContents, &[u8]) {
+    ( TranspileContents::Original(String::from("")), b"" )
 }
 
-fn transpile_switch (data: Transpilation) -> Transpilation {
-    Transpilation::Transpiled(String::from(""))
+fn transpile_switch (data: TranspileContents) -> TranspileContents {
+    TranspileContents::Transpiled(String::from(""))
 }

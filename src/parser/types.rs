@@ -1,6 +1,6 @@
-use crate::transpiler::types::{
-    Transpilation
-};
+use crate::transpiler::{implementations::implementations::CompilableStruct, types::{
+    TranspileContents
+}};
 
 use crate::transpiler::implementations::implementations::CompileType;
 
@@ -47,8 +47,8 @@ pub struct ParsedFile {
 /// Includes the type of compilation, and the snippet of code that the compilation
 ///         on which the compilation will occur
 pub struct Compilable {
-    pub comp_type: CompileType,                 // The type of compilation that will occur
-    pub content: Transpilation                  // The raw .fjs code that will be compiled into vanilla .js
+    pub comp_type: CompilableStruct,            // The type of compilation that will occur
+    pub content: TranspileContents              // The raw .fjs code that will be compiled into vanilla .js
 }
 
 
