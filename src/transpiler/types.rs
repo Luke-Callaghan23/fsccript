@@ -1,21 +1,24 @@
-use std::fmt;
-use crate::parser::types::FileContent;
+use crate::transpiler::implementations::{fscript_if, fscript_switch};
 
-pub enum TranspileContents {
-    Original   ( String ),
-    Transpiled ( String )
+/// Enumeration of the types of compilation that can occur
+/// Obviously, this enum will be expanded in future, after more releases
+pub enum CompileType {
+    If    ,                                     // compilation targeting an if, or if-else statement
+    Switch,                                     // compilation targeting a switch statement
+    // <new compilation type here>
 }
 
-/// # Display implementation for the transpilation struct
-impl fmt::Display  for TranspileContents {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            TranspileContents::Original ( original ) => {
-                write!(f, "ORIGINAL CONTENT: {}", original)
-            },
-            TranspileContents::Transpiled ( transpiled ) => {
-                write!(f, "TRANSPILED CONTENT: {}", transpiled)
-            }
-        }
-    }
+
+pub struct CompilationInstructions {
+    pub comp_type: CompileType,
+    pub check: Box<dyn Fn(&[u8], usize) -> bool>,
+    pub parse: Box<dyn Fn(&[u8]) -> (&[u8], &[u8])>,    
+    pub transpile: Box<dyn Fn(&[u8]) -> &[u8]>
 }
+
+
+pub fn initialize_compilables () -> [CompilationInstructions;2 /* <- increment this  */] {[
+    fscript_if::implement_if(),
+    fscript_switch::implement_switch(),
+    // <add the new compilable here>
+]}

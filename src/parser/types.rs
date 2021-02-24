@@ -1,8 +1,4 @@
-use crate::transpiler::{implementations::implementations::CompilableStruct, types::{
-    TranspileContents
-}};
-
-use crate::transpiler::implementations::implementations::CompileType;
+use crate::transpiler::types::CompilationInstructions;
 
 /// Structure of a .fjs file compilation target 
 /// Contains the name of the raw file: file_name, a FileContent variant 
@@ -22,6 +18,7 @@ pub struct CompilationTarget {
 pub enum FileContent {
     Raw    (   String   ),                      // Raw code read from a file
     Parsed ( ParsedFile ),                      // Parsed file
+    Transpiled ( TranspiledFile )
 }
 
 /// Structure of a file once it has been parse
@@ -40,15 +37,25 @@ pub enum FileContent {
 pub struct ParsedFile {
     pub size:                usize,             // size of the raw file
     pub vanilla_sections:    Vec<String>,       // vector of the sections of vanilla code that will be pasted directly into the output file
-    pub compilable_sections: Vec<Compilable>,   // vector of the .fjs expressions that will be compiled before being pasted into the output file
+    pub compilable_sections: Vec<CompilableSection>,   // vector of the .fjs expressions that will be compiled before being pasted into the output file
+}
+
+pub struct TranspiledFile {
+    pub size: usize,
+    pub vanilla_sections: Vec<String>,
+    pub compiled_sections: Vec<String>
 }
 
 /// Structure of a transpilable section of .fjs code
 /// Includes the type of compilation, and the snippet of code that the compilation
 ///         on which the compilation will occur
-pub struct Compilable {
-    pub comp_type: CompilableStruct,            // The type of compilation that will occur
-    pub content: TranspileContents              // The raw .fjs code that will be compiled into vanilla .js
+pub struct CompilableSection {
+    pub comp_instructions:           // The type of compilation that will occur
+        CompilationInstructions,            
+    pub content: String              // The raw .fjs code that will be compiled into vanilla .js
 }
+
+
+
 
 

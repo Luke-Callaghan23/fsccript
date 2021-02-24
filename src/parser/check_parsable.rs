@@ -1,10 +1,10 @@
-use crate::transpiler::implementations::implementations::CompilableStruct;
+use crate::transpiler::types::CompilationInstructions;
 
 pub fn check <'a> (
     data: &[u8], 
     start_index: usize,
-    all_compilables: &'a [CompilableStruct]
-) -> Option<&'a CompilableStruct> {
+    all_compilables: &'a [CompilationInstructions]
+) -> Option<&'a CompilationInstructions> {
     all_compilables.iter().find_map(| compilable | { 
         if (*compilable.check)(data, start_index) { Some(compilable) } 
         else { None }

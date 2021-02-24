@@ -1,9 +1,8 @@
-use crate::transpiler::implementations::implementations::{CompileType, CompilableStruct};
-use crate::transpiler::types::TranspileContents;
+use crate::transpiler::types::{CompileType, CompilationInstructions};
 use std::str;
 
-pub fn implement_if () -> CompilableStruct {
-    CompilableStruct {
+pub fn implement_if () -> CompilationInstructions {
+    CompilationInstructions {
         comp_type: CompileType::If,
         check: Box::new(check_if),
         parse: Box::new(parse_if),
@@ -16,10 +15,10 @@ fn check_if (data: &[u8], _start_index: usize) -> bool {
     String::from(str::from_utf8(data).unwrap()).starts_with("if")
 }
 
-fn parse_if (data: &[u8]) -> (TranspileContents, &[u8]) {
-    ( TranspileContents::Original(String::from("")), b"" )
+fn parse_if (data: &[u8]) -> (&[u8], &[u8]) {
+    ( b"", b"" )
 }
 
-fn transpile_if (data: TranspileContents) -> TranspileContents {
-    TranspileContents::Transpiled(String::from(""))
+fn transpile_if (data: &[u8]) -> &[u8] {
+    b""
 }

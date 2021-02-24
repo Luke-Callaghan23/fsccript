@@ -3,7 +3,7 @@ pub mod type_implementations {
     use crate::parser::types::{
         CompilationTarget,
         FileContent,
-        Compilable
+        CompilableSection
     };
     
     /// Implementation of Display Trait for a CompilationTarget
@@ -22,15 +22,16 @@ pub mod type_implementations {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             write!(f, "{}", 
                 match self {
-                    FileContent::Raw    (  raw_code   ) => {   raw_code.len()   },
-                    FileContent::Parsed ( parsed_code ) => {  parsed_code.size  }
+                    FileContent::Raw       (    raw_code     ) => {     raw_code.len()     },
+                    FileContent::Parsed    (   parsed_code   ) => {    parsed_code.size    },
+                    FileContent::Transpiled( transpiled_code ) => {  transpiled_code.size  },
                 }
             )
         }
     }
 
     /// Implementation of Display Trait for Conpilable
-    impl fmt::Display for Compilable {
+    impl fmt::Display for CompilableSection {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             write!(f, "{}", self.content)
         }

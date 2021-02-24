@@ -1,11 +1,11 @@
+use std::ops::Deref;
+
 use crate::parser::types::{
     FileContent,
     CompilationTarget,
-    ParsedFile,
-    Compilable
+    TranspiledFile,
+    CompilableSection
 };
-
-use crate::transpiler::types::TranspileContents;
 
 pub fn transpile_all_targets (uncompiled: Vec<CompilationTarget>) -> Vec<CompilationTarget> {
     uncompiled.into_iter().map(| target | {
@@ -15,26 +15,32 @@ pub fn transpile_all_targets (uncompiled: Vec<CompilationTarget>) -> Vec<Compila
 
 fn compile_target (target: CompilationTarget) -> CompilationTarget {
     return if let FileContent::Parsed( parsed ) = target.contents {
-        // Rebuilding the compilation target 
+        // Rebuilding the compilation target struct:
         CompilationTarget {
+            // Same input / output
             input_path: target.input_path,
             output_path: target.output_path,
-            contents: FileContent::Parsed (
-                ParsedFile {
+            contents: FileContent::Transpiled (
+                // Rebuilding the contents as TranspiledFile struct:
+                TranspiledFile {
+                    // Same size and vanilla sections
                     size: parsed.size,
                     vanilla_sections: parsed.vanilla_sections,
-                    compilable_sections: 
-                    parsed.compilable_sections.into_iter().map(| compilable | {
-                        Compilable {
-                            comp_type: compilable.comp_type,
-                            content: if let TranspileContents::Original ( content ) = compilable.content {
-                                TranspileContents::Transpiled(content)
-                            }
-                            else {
-                                TranspileContents::Transpiled(String::from(""))
-                            }
-                        }
-                    }).collect()
+                    compiled_sections: 
+                        // 
+                        parsed.compilable_sections.into_iter().map(| compilable | {
+
+                            // Getting the compilation instructions function from the compilable obect's comp_type
+                            let compilation_instructions = compilable.comp_instructions.transpile.deref();
+
+                            // Executing the compilation instruction, and wrapping that u8 array into
+                            //      a &str, and then a String
+                            String::from (
+                                std::str::from_utf8 (
+                                    compilation_instructions(compilable.content.as_bytes())
+                                ).unwrap()
+                            )
+                        }).collect()
                 }
             )
         }

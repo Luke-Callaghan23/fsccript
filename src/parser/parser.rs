@@ -6,9 +6,9 @@ pub mod parser {
         ParsedFile,
         CompilationTarget
     };
-    use crate::transpiler::implementations::implementations::{
+    use crate::transpiler::types::{
         initialize_compilables,
-        CompilableStruct,
+        CompilationInstructions,
     };
 
     use crate::parser::token_type_lookup::*;
@@ -64,7 +64,7 @@ pub mod parser {
         data: String, 
         token_lookup: &TokenLookup,
         pairs_lookup: &EnclosingPairs,
-        all_compilables: &[CompilableStruct]
+        all_compilables: &[CompilationInstructions]
     ) -> ParsedFile {
 
         let data = data.as_bytes();
