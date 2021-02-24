@@ -1,0 +1,27 @@
+use crate::transpiler::types::{CompileType, CompilableStruct, Transpilation};
+use std::str;
+
+pub fn implement_<type> () -> CompilableStruct {
+    CompilableStruct {
+        comp_type: CompileType::<type>,
+        check: Box::new(check_<type>),
+        parse: Box::new(parse_<type>),
+        transpile: Box::new(transpile_<type>)
+    }
+}
+
+
+fn check_<type> (data: &[u8]) -> bool {
+    String::from(str::from_utf8(data).unwrap()).starts_with("<type>")
+}
+
+fn parse_<type> (data: &[u8]) -> (Transpilation, &[u8]) {
+    (
+        Transpilation::Original(String::from("")),
+        b""
+    )
+}
+
+fn transpile_<type> (data: Transpilation) -> Transpilation {
+    Transpilation::Transpiled(String::from(""))
+}

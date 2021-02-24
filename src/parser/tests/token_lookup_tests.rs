@@ -4,7 +4,7 @@ mod tests {
 
     #[test]
     // Most basic lookup
-    fn single_char_lookup () {
+    fn test_single_char_lookup () {
 
         let lookup_table = initialize_lookup();
 
@@ -19,7 +19,7 @@ mod tests {
     
     #[test]
     // Three-character lookup
-    fn triple_char_lookup () {
+    fn test_triple_char_lookup () {
 
         let lookup_table = initialize_lookup();
 
@@ -33,7 +33,7 @@ mod tests {
     
     #[test]
     // Four-character long lookup
-    fn quad_char_lookup () {
+    fn test_quad_char_lookup () {
 
         let lookup_table = initialize_lookup();
 
@@ -46,7 +46,7 @@ mod tests {
     
     #[test]
     // Testing a string lookup -- (a longer token)
-    fn string_lookup () {
+    fn test_string_lookup () {
 
         let lookup_table = initialize_lookup();
 
@@ -59,7 +59,7 @@ mod tests {
     
     #[test]
     // Testing another string lookup
-    fn string_lookup_2 () {
+    fn test_string_lookup_2 () {
 
         let lookup_table = initialize_lookup();
 
@@ -73,7 +73,7 @@ mod tests {
     
     #[test]
     // Testing a failed lookup
-    fn failed_lookup () {
+    fn test_failed_lookup () {
 
         let lookup_table = initialize_lookup();
 
@@ -85,8 +85,20 @@ mod tests {
     }
     
     #[test]
+    // Testing a failed lookup
+    fn test_failed_lookup_2 () {
+
+        let lookup_table = initialize_lookup();
+
+        let string: &str = "typeoff";
+        let res = lookup_token(string.as_bytes(), &lookup_table);
+
+        assert_eq!(res, TokensOfInterest::None);
+    }
+    
+    #[test]
     // Stress test -- all tokens of interest
-    fn all_lookups () {
+    fn test_all_lookups () {
 
         let lookup_table = initialize_lookup();
 

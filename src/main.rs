@@ -1,7 +1,7 @@
 use std::env;
 
 mod parser;
-use parser::*;
+use parser::parser::parser::parse_files;
 use parser::types::{
     CompilationTarget
 };
@@ -16,16 +16,22 @@ extern crate itertools;
 extern crate regex;
 
 mod transpiler;
+use transpiler::transpiler::transpile_all_targets;
 
 
 #[allow(unused_parens)]
 fn main () {
-    println!("Hello, world!!!");
-    
-
     let mut args: Vec<String> = env::args().rev().collect();
     args.pop();
     
+    // Four steps: 
+    //      read files,
+    //      parse files,
+    //      transpile files
+    //      write files
+
+
+    // 1. Read all files, store as CompilationTargets in 'targets'
     let targets: Vec<CompilationTarget> = process_files ((
         if args.len() > 0 {
             // If arguments were supplied, use them as the paths to compile
@@ -37,7 +43,16 @@ fn main () {
         }
     ));
 
-    for target in targets {
-        println!("{}", target);
-    }
+    // 2. parse all files, store as CompilationTargets in 'parsed_targets'
+    let parsed_target = parse_files(targets);
+
+
+    // 3. transpile all parsed files, store in transpiled in 'transpiled'
+    let transpiled_targets = transpile_all_targets(parsed_target);
+
+    // 4.
+    write_all(transpiled_targets);
+
+    println!("Finished.");
 }
+

@@ -1,6 +1,6 @@
 use std::fs;
 
-use crate::types::{
+use crate::parser::types::{
     CompilationTarget,
     FileContent
 };

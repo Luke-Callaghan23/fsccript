@@ -1,586 +1,3 @@
-/*use regex::Regex;
-
-
-#[derive(Debug)]
-pub struct TokenLookup {
-    lookup: Vec<CharacterAndStep>
-}
-
-#[derive(Debug)]
-pub struct CharacterAndStep {
-    next: regex::Regex,
-    step: LookupOrEnd,
-}
-#[derive(Debug)]
-pub enum LookupOrEnd {
-    Lookup ( TokenLookup ),
-    None ( &'static str, TokensOfInterest )
-}
-
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-#[allow(dead_code)]
-pub enum TokensOfInterest {
-
-    // Beginning with '&', '|', '^',
-    BitAnd,  BitAndEq,   LogAnd,  
-    BitOr ,  BitOrEq ,   LogOr,   
-    BitXor,  BitXorEq, 
-    BitNot,  BitNotEq, 
-
-    // Beginning with '='
-    Assign, WeakEq, StrictEq,
-    
-    // Beginning with !
-    Not, NotEq, StrictNotEq,
-
-    // Beginning with '<' or '>'
-    Gt, Ge, ShR, ShREq, ShRZeroFill, ShRZeroFillEq,
-    Lt, Le, ShL, ShLEq,
-
-    // Math operators: '+', '-', '*', '/', '%'
-    Add, AddEq, Inc, // +
-    Sub, SubEq, Dec, // -
-    Mul, MulEq,      // *
-    Div, DivEq,      // /
-    Mod, ModEq,      // %
-
-    // Structural tokens: '(', '[' , ']', ')'
-    OpenParen, OpenBrack, CloseParen, CloseBrack,
-
-    // Structural operators: ':', ','
-    Colon, Comma,
-
-    // String operators
-    Delete, Typeof, In, Instanceof, Of,
-    If, Switch,
-
-    // Only after operators
-    New, Dot,
-
-    // Not interesting :(
-    None
-}
-
-
-pub fn initialize_lookup () -> TokenLookup {
-    TokenLookup {
-        lookup: vec![
-            CharacterAndStep {
-                // Tokens beginning with '&' 
-                next: Regex::new("&").unwrap(),
-                step: LookupOrEnd::Lookup (
-                    TokenLookup {
-                        lookup: vec![
-                            // '&&'    
-                            CharacterAndStep {
-                                next: Regex::new("&").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::LogAnd )
-                            },
-                            // '&'
-                            CharacterAndStep {
-                                next: Regex::new("\\s").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::BitAnd )
-                            },
-                            // '&='
-                            CharacterAndStep {
-                                next: Regex::new("=").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::BitAndEq )
-                            }
-                        ]
-                    }
-                )
-            },
-            // Tokens beginning with '|'
-            CharacterAndStep {
-                next: Regex::new("\\|").unwrap(),
-                step: LookupOrEnd::Lookup (
-                    TokenLookup {
-                        lookup: vec![
-                            // '||'
-                            CharacterAndStep {
-                                next: Regex::new("\\|").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::LogOr )
-                            },
-                            // '|'
-                            CharacterAndStep {
-                                next: Regex::new("\\s").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::BitOr )
-                            },
-                            // '|='
-                            CharacterAndStep {
-                                next: Regex::new("=").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::BitOrEq )
-                            }
-                        ]
-                    }
-                )
-            },
-            // Tokens beginning with '^'
-            CharacterAndStep {
-                next: Regex::new("\\^").unwrap(),
-                step: LookupOrEnd::Lookup (
-                    TokenLookup {
-                        lookup: vec![
-                            // '^'
-                            CharacterAndStep {
-                                next: Regex::new("\\s").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::BitXor )
-                            },
-                            // '^='
-                            CharacterAndStep {
-                                next: Regex::new("=").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::BitXorEq )
-                            }
-                        ]
-                    }
-                )
-            },
-            // Tokens beginning with '~'
-            CharacterAndStep {
-                next: Regex::new("~").unwrap(),
-                step: LookupOrEnd::Lookup (
-                    TokenLookup {
-                        lookup: vec![
-                            // '~'
-                            CharacterAndStep {
-                                next: Regex::new("\\s").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::BitNot )
-                            },
-                            // '~='
-                            CharacterAndStep {
-                                next: Regex::new("=").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::BitNotEq )
-                            }
-                        ]
-                    }
-                )
-            },
-            // Tokens beginning with '='
-            CharacterAndStep {
-                next: Regex::new("=").unwrap(),
-                step: LookupOrEnd::Lookup (
-                    TokenLookup {
-                        lookup: vec![
-                            // '='
-                            CharacterAndStep {
-                                next: Regex::new("\\s").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Assign )
-                            },
-                            CharacterAndStep {
-                                next: Regex::new("=").unwrap(),
-                                step: LookupOrEnd::Lookup (
-                                    TokenLookup {
-                                        lookup: vec![
-                                            // '==='
-                                            CharacterAndStep {
-                                                next: Regex::new("=").unwrap(),
-                                                step: LookupOrEnd::None ( "", TokensOfInterest::StrictEq )
-                                            },
-                                            // '=='
-                                            CharacterAndStep {
-                                                next: Regex::new("\\s").unwrap(),
-                                                step: LookupOrEnd::None ( "", TokensOfInterest::WeakEq )
-                                            },
-                                        ]
-                                    }
-                                )
-                            },
-                        ]
-                    }
-                )
-            },
-            // Tokens beginning with '!'
-            CharacterAndStep {
-                next: Regex::new("!").unwrap(),
-                step: LookupOrEnd::Lookup (
-                    TokenLookup {
-                        lookup: vec![
-                            // '!'
-                            CharacterAndStep {
-                                next: Regex::new("\\s").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Not )
-                            },
-                            CharacterAndStep {
-                                next: Regex::new("=").unwrap(),
-                                step: LookupOrEnd::Lookup (
-                                    TokenLookup {
-                                        lookup: vec![
-                                            // '!=='
-                                            CharacterAndStep {
-                                                next: Regex::new("=").unwrap(),
-                                                step: LookupOrEnd::None ( "", TokensOfInterest::StrictNotEq )
-                                            },
-                                            // '!='
-                                            CharacterAndStep {
-                                                next: Regex::new("\\s").unwrap(),
-                                                step: LookupOrEnd::None ( "", TokensOfInterest::NotEq )
-                                            },
-                                        ]
-                                    }
-                                )
-                            },
-                        ]
-                    }
-                )
-            },
-            // Tokens beginning with '<'
-            CharacterAndStep {
-                next: Regex::new("<").unwrap(),
-                step: LookupOrEnd::Lookup (
-                    TokenLookup {
-                        lookup: vec![
-                            // '<'
-                            CharacterAndStep {
-                                next: Regex::new("\\s").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Lt )
-                            },
-                            // '<='
-                            CharacterAndStep {
-                                next: Regex::new("=").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Le )
-                            },
-                            CharacterAndStep {
-                                next: Regex::new("<").unwrap(),
-                                step: LookupOrEnd::Lookup (
-                                    TokenLookup {
-                                        lookup: vec![
-                                            // '<<='
-                                            CharacterAndStep {
-                                                next: Regex::new("=").unwrap(),
-                                                step: LookupOrEnd::None ( "", TokensOfInterest::ShLEq )
-                                            },
-                                            // '<<'
-                                            CharacterAndStep {
-                                                next: Regex::new("\\s").unwrap(),
-                                                step: LookupOrEnd::None ( "", TokensOfInterest::ShL )
-                                            },
-                                        ]
-                                    }
-                                )
-                            },
-                        ]
-                    }
-                )
-            },
-            // Tokens beginning with '>'
-            CharacterAndStep {
-                next: Regex::new(">").unwrap(),
-                step: LookupOrEnd::Lookup (
-                    TokenLookup {
-                        lookup: vec![
-                            // '>'
-                            CharacterAndStep {
-                                next: Regex::new("\\s").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Gt )
-                            },
-                            // '>='
-                            CharacterAndStep {
-                                next: Regex::new("=").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Ge )
-                            },
-                            CharacterAndStep {
-                                next: Regex::new(">").unwrap(),
-                                step: LookupOrEnd::Lookup (
-                                    TokenLookup {
-                                        lookup: vec![
-                                            // '>>='
-                                            CharacterAndStep {
-                                                next: Regex::new("=").unwrap(),
-                                                step: LookupOrEnd::None ( "", TokensOfInterest::ShREq )
-                                            },
-                                            // '>>'
-                                            CharacterAndStep {
-                                                next: Regex::new("\\s").unwrap(),
-                                                step: LookupOrEnd::None ( "", TokensOfInterest::ShR )
-                                            },
-                                            CharacterAndStep {
-                                                next: Regex::new(">").unwrap(),
-                                                step: LookupOrEnd::Lookup (
-                                                    TokenLookup {
-                                                        lookup: vec![
-                                                            // '>>>='
-                                                            CharacterAndStep {
-                                                                next: Regex::new("=").unwrap(),
-                                                                step: LookupOrEnd::None ( "", TokensOfInterest::ShRZeroFillEq )
-                                                            },
-                                                            // '>>>'
-                                                            CharacterAndStep {
-                                                                next: Regex::new("\\s").unwrap(),
-                                                                step: LookupOrEnd::None ( "", TokensOfInterest::ShRZeroFill )
-                                                            },
-                                                        ]
-                                                    }
-                                                )
-                                            },
-                                        ]
-                                    }
-                                )
-                            },
-                        ]
-                    }
-                )
-            },
-            // Tokens beginning with '+'
-            CharacterAndStep {
-                next: Regex::new("\\+").unwrap(),
-                step: LookupOrEnd::Lookup (
-                    TokenLookup {
-                        lookup: vec![
-                            // '++'
-                            CharacterAndStep {
-                                next: Regex::new("\\+").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Inc )
-                            },
-                            // '+='
-                            CharacterAndStep {
-                                next: Regex::new("=").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::AddEq )
-                            },
-                            // '+'
-                            CharacterAndStep {
-                                next: Regex::new("\\s").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Add )
-                            }
-                        ]
-                    }
-                )
-            },
-            // Tokens beginning with '-'
-            CharacterAndStep {
-                next: Regex::new("-").unwrap(),
-                step: LookupOrEnd::Lookup (
-                    TokenLookup {
-                        lookup: vec![
-                            // '--'
-                            CharacterAndStep {
-                                next: Regex::new("-").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Dec )
-                            },
-                            // '-='
-                            CharacterAndStep {
-                                next: Regex::new("=").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::SubEq )
-                            },
-                            // '-'
-                            CharacterAndStep {
-                                next: Regex::new("\\s").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Sub )
-                            }
-                        ]
-                    }
-                )
-            },
-            // Tokens beginning with '*'
-            CharacterAndStep {
-                next: Regex::new("\\*").unwrap(),
-                step: LookupOrEnd::Lookup (
-                    TokenLookup {
-                        lookup: vec![
-                            // '*='
-                            CharacterAndStep {
-                                next: Regex::new("=").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::MulEq )
-                            },
-                            // '*'
-                            CharacterAndStep {
-                                next: Regex::new("\\s").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Mul )
-                            }
-                        ]
-                    }
-                )
-            },
-            // Tokens beginning with '/'
-            CharacterAndStep {
-                next: Regex::new("/").unwrap(),
-                step: LookupOrEnd::Lookup (
-                    TokenLookup {
-                        lookup: vec![
-                            // '/='
-                            CharacterAndStep {
-                                next: Regex::new("=").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::DivEq )
-                            },
-                            // '/'
-                            CharacterAndStep {
-                                next: Regex::new("\\s").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Div )
-                            }
-                        ]
-                    }
-                )
-            },
-            // Tokens beginning with '%'
-            CharacterAndStep {
-                next: Regex::new("%").unwrap(),
-                step: LookupOrEnd::Lookup (
-                    TokenLookup {
-                        lookup: vec![
-                            // '%='
-                            CharacterAndStep {
-                                next: Regex::new("=").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::ModEq )
-                            },
-                            // '%'
-                            CharacterAndStep {
-                                next: Regex::new("\\s").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Mod )
-                            }
-                        ]
-                    }
-                )
-            },
-            // Tokens beginning with '('
-            CharacterAndStep {
-                next: Regex::new("\\(").unwrap(),
-                step: LookupOrEnd::None( "", TokensOfInterest::OpenParen )
-            },
-            // Tokens beginning with '['
-            CharacterAndStep {
-                next: Regex::new("\\[").unwrap(),
-                step: LookupOrEnd::None( "", TokensOfInterest::OpenBrack )
-            },
-            // Tokens beginning with ']'
-            CharacterAndStep {
-                next: Regex::new("\\)").unwrap(),
-                step: LookupOrEnd::None( "", TokensOfInterest::CloseParen )
-            },
-            // Tokens beginning with ')'
-            CharacterAndStep {
-                next: Regex::new("\\]").unwrap(),
-                step: LookupOrEnd::None( "", TokensOfInterest::CloseBrack )
-            },
-            // Tokens beginning with ','
-            CharacterAndStep {
-                next: Regex::new(",").unwrap(),
-                step: LookupOrEnd::None( "", TokensOfInterest::Comma )
-            },
-            // Tokens beginning with ':'
-            CharacterAndStep {
-                next: Regex::new(":").unwrap(),
-                step: LookupOrEnd::None( "", TokensOfInterest::Colon )
-            },
-            // Tokens beginning with '.'
-            CharacterAndStep {
-                next: Regex::new(".").unwrap(),
-                step: LookupOrEnd::None( "", TokensOfInterest::Dot )
-            },
-            
-            // Tokens beginning with 'in'
-            CharacterAndStep {
-                next: Regex::new("i").unwrap(),
-                step: LookupOrEnd::Lookup (
-                    TokenLookup { 
-                        lookup: vec![
-                            // 'in'
-                            CharacterAndStep {
-                                next: Regex::new("n").unwrap(),
-                                step: LookupOrEnd::Lookup (
-                                    TokenLookup {
-                                        lookup: vec![
-                                            // 'in'
-                                            CharacterAndStep {
-                                                next: Regex::new("\\s").unwrap(),
-                                                step: LookupOrEnd::None ( "", TokensOfInterest::In )
-                                            },
-                                            // 'instanceof'
-                                            CharacterAndStep {
-                                                next: Regex::new("s").unwrap(),
-                                                step: LookupOrEnd::None ( "tanceof", TokensOfInterest::Instanceof  )
-                                            }
-                                        ]
-                                    }
-                                )
-                            },
-                            CharacterAndStep {
-                                next: Regex::new("f").unwrap(),
-                                step: LookupOrEnd::None ( "", TokensOfInterest::If )
-                            },
-                        ]
-                    }
-                )
-            },
-
-            // Tokens beginning with 'o'
-            CharacterAndStep {
-                next: Regex::new("o").unwrap(),
-                step: LookupOrEnd::None ( "f", TokensOfInterest::Of )
-            },
-
-            // Tokens beginning with 't'
-            CharacterAndStep {
-                next: Regex::new("t").unwrap(),
-                step: LookupOrEnd::None ( "ypeof", TokensOfInterest::Typeof )
-            },
-
-            // Tokens beginning with 's'
-            CharacterAndStep {
-                next: Regex::new("s").unwrap(),
-                step: LookupOrEnd::None ( "witch", TokensOfInterest::Switch )
-            },
-
-            // Tokens beginning with 'd'
-            CharacterAndStep {
-                next: Regex::new("d").unwrap(),
-                step: LookupOrEnd::None ( "elete", TokensOfInterest::Delete )
-            },
-
-            // Tokens beginning with 'n'
-            CharacterAndStep {
-                next: Regex::new("n").unwrap(),
-                step: LookupOrEnd::None ( "ew", TokensOfInterest::New )
-            },
-        ]
-    }
-}
-
-
-
-use std::str;
-
-
-#[allow(non_snake_case)]
-pub fn lookup_token (token: &[u8], lookup_table: &TokenLookup) -> TokensOfInterest {
-    println!("{:?}", token);
-    for char_step in &lookup_table.lookup {
-        
-        // Getting the next character of the token, and the token to test against
-        let (next_char, next_token) = 
-            if token.len() > 0 { (token[ 0usize ], &token[1..]) }
-            else { (' ' as u8, token) };
-
-        if !char_step.next.is_match(str::from_utf8(&[ next_char; 1 ]).unwrap()) {
-            // If the first character of the token slice is not the 
-            //      next char for this CharAndStep branch, then 
-            //      just continue
-            continue;
-        }
-        else {
-            println!("{:?}", char_step.step);
-            // If the character does match the character, then we check if the 
-            //      step property of the CharacterAndStep struct is another 
-            //      lookup, or a token of interest
-            match &char_step.step {
-                LookupOrEnd::Lookup( lookup ) => return lookup_token(next_token, &lookup),
-                LookupOrEnd::None( RDLP, result ) => {
-                    
-                    // println!("Rem str: {:?}", next_token);
-                    // println!("RDLP: {:?}", RDLP);
-
-                    if str::from_utf8(next_token).unwrap() == *RDLP {
-                        return *result;
-                    }
-                }
-            }
-            
-        }
-    }
-    TokensOfInterest::None
-}
-
-
-
-*/
 #[derive(Debug)]
 pub struct TokenLookup {
     lookup: Vec<CharacterAndStep>
@@ -594,7 +11,7 @@ pub struct CharacterAndStep {
 #[derive(Debug)]
 pub enum LookupOrEnd {
     Lookup ( TokenLookup ),
-    None ( &'static str, TokensOfInterest )
+    None ( regex::Regex, TokensOfInterest )
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -608,7 +25,7 @@ pub enum TokensOfInterest {
     BitNot,  BitNotEq, 
 
     // Beginning with '='
-    Assign, WeakEq, StrictEq,
+    Assign, WeakEq, StrictEq, ArrowFunction,
     
     // Beginning with !
     Not, NotEq, StrictNotEq,
@@ -641,8 +58,11 @@ pub enum TokensOfInterest {
     None
 }
 
+use regex::Regex;
 
 pub fn initialize_lookup () -> TokenLookup {
+    let def_regex = Regex::new(".?").unwrap();
+
     TokenLookup {
         lookup: vec![
             CharacterAndStep {
@@ -654,17 +74,17 @@ pub fn initialize_lookup () -> TokenLookup {
                             // '&&'    
                             CharacterAndStep {
                                 next: '&',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::LogAnd )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::LogAnd )
                             },
                             // '&'
                             CharacterAndStep {
                                 next: ' ',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::BitAnd )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::BitAnd )
                             },
                             // '&='
                             CharacterAndStep {
                                 next: '=',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::BitAndEq )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::BitAndEq )
                             }
                         ]
                     }
@@ -679,17 +99,17 @@ pub fn initialize_lookup () -> TokenLookup {
                             // '||'
                             CharacterAndStep {
                                 next: '|',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::LogOr )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::LogOr )
                             },
                             // '|'
                             CharacterAndStep {
                                 next: ' ',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::BitOr )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::BitOr )
                             },
                             // '|='
                             CharacterAndStep {
                                 next: '=',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::BitOrEq )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::BitOrEq )
                             }
                         ]
                     }
@@ -704,12 +124,12 @@ pub fn initialize_lookup () -> TokenLookup {
                             // '^'
                             CharacterAndStep {
                                 next: ' ',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::BitXor )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::BitXor )
                             },
                             // '^='
                             CharacterAndStep {
                                 next: '=',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::BitXorEq )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::BitXorEq )
                             }
                         ]
                     }
@@ -724,12 +144,12 @@ pub fn initialize_lookup () -> TokenLookup {
                             // '~'
                             CharacterAndStep {
                                 next: ' ',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::BitNot )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::BitNot )
                             },
                             // '~='
                             CharacterAndStep {
                                 next: '=',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::BitNotEq )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::BitNotEq )
                             }
                         ]
                     }
@@ -744,7 +164,12 @@ pub fn initialize_lookup () -> TokenLookup {
                             // '='
                             CharacterAndStep {
                                 next: ' ',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Assign )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::Assign )
+                            },
+                            // '=>'
+                            CharacterAndStep {
+                                next: '>',
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::ArrowFunction )
                             },
                             CharacterAndStep {
                                 next: '=',
@@ -754,12 +179,12 @@ pub fn initialize_lookup () -> TokenLookup {
                                             // '==='
                                             CharacterAndStep {
                                                 next: '=',
-                                                step: LookupOrEnd::None ( "", TokensOfInterest::StrictEq )
+                                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::StrictEq )
                                             },
                                             // '=='
                                             CharacterAndStep {
                                                 next: ' ',
-                                                step: LookupOrEnd::None ( "", TokensOfInterest::WeakEq )
+                                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::WeakEq )
                                             },
                                         ]
                                     }
@@ -778,7 +203,7 @@ pub fn initialize_lookup () -> TokenLookup {
                             // '!'
                             CharacterAndStep {
                                 next: ' ',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Not )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::Not )
                             },
                             CharacterAndStep {
                                 next: '=',
@@ -788,12 +213,12 @@ pub fn initialize_lookup () -> TokenLookup {
                                             // '!=='
                                             CharacterAndStep {
                                                 next: '=',
-                                                step: LookupOrEnd::None ( "", TokensOfInterest::StrictNotEq )
+                                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::StrictNotEq )
                                             },
                                             // '!='
                                             CharacterAndStep {
                                                 next: ' ',
-                                                step: LookupOrEnd::None ( "", TokensOfInterest::NotEq )
+                                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::NotEq )
                                             },
                                         ]
                                     }
@@ -812,12 +237,12 @@ pub fn initialize_lookup () -> TokenLookup {
                             // '<'
                             CharacterAndStep {
                                 next: ' ',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Lt )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::Lt )
                             },
                             // '<='
                             CharacterAndStep {
                                 next: '=',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Le )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::Le )
                             },
                             CharacterAndStep {
                                 next: '<',
@@ -827,12 +252,12 @@ pub fn initialize_lookup () -> TokenLookup {
                                             // '<<='
                                             CharacterAndStep {
                                                 next: '=',
-                                                step: LookupOrEnd::None ( "", TokensOfInterest::ShLEq )
+                                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::ShLEq )
                                             },
                                             // '<<'
                                             CharacterAndStep {
                                                 next: ' ',
-                                                step: LookupOrEnd::None ( "", TokensOfInterest::ShL )
+                                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::ShL )
                                             },
                                         ]
                                     }
@@ -851,12 +276,12 @@ pub fn initialize_lookup () -> TokenLookup {
                             // '>'
                             CharacterAndStep {
                                 next: ' ',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Gt )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::Gt )
                             },
                             // '>='
                             CharacterAndStep {
                                 next: '=',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Ge )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::Ge )
                             },
                             CharacterAndStep {
                                 next: '>',
@@ -866,12 +291,12 @@ pub fn initialize_lookup () -> TokenLookup {
                                             // '>>='
                                             CharacterAndStep {
                                                 next: '=',
-                                                step: LookupOrEnd::None ( "", TokensOfInterest::ShREq )
+                                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::ShREq )
                                             },
                                             // '>>'
                                             CharacterAndStep {
                                                 next: ' ',
-                                                step: LookupOrEnd::None ( "", TokensOfInterest::ShR )
+                                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::ShR )
                                             },
                                             CharacterAndStep {
                                                 next: '>',
@@ -881,12 +306,12 @@ pub fn initialize_lookup () -> TokenLookup {
                                                             // '>>>='
                                                             CharacterAndStep {
                                                                 next: '=',
-                                                                step: LookupOrEnd::None ( "", TokensOfInterest::ShRZeroFillEq )
+                                                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::ShRZeroFillEq )
                                                             },
                                                             // '>>>'
                                                             CharacterAndStep {
                                                                 next: ' ',
-                                                                step: LookupOrEnd::None ( "", TokensOfInterest::ShRZeroFill )
+                                                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::ShRZeroFill )
                                                             },
                                                         ]
                                                     }
@@ -909,17 +334,17 @@ pub fn initialize_lookup () -> TokenLookup {
                             // '++'
                             CharacterAndStep {
                                 next: '+',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Inc )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::Inc )
                             },
                             // '+='
                             CharacterAndStep {
                                 next: '=',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::AddEq )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::AddEq )
                             },
                             // '+'
                             CharacterAndStep {
                                 next: ' ',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Add )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::Add )
                             }
                         ]
                     }
@@ -934,17 +359,17 @@ pub fn initialize_lookup () -> TokenLookup {
                             // '--'
                             CharacterAndStep {
                                 next: '-',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Dec )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::Dec )
                             },
                             // '-='
                             CharacterAndStep {
                                 next: '=',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::SubEq )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::SubEq )
                             },
                             // '-'
                             CharacterAndStep {
                                 next: ' ',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Sub )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::Sub )
                             }
                         ]
                     }
@@ -959,12 +384,12 @@ pub fn initialize_lookup () -> TokenLookup {
                             // '*='
                             CharacterAndStep {
                                 next: '=',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::MulEq )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::MulEq )
                             },
                             // '*'
                             CharacterAndStep {
                                 next: ' ',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Mul )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::Mul )
                             }
                         ]
                     }
@@ -979,12 +404,12 @@ pub fn initialize_lookup () -> TokenLookup {
                             // '/='
                             CharacterAndStep {
                                 next: '=',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::DivEq )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::DivEq )
                             },
                             // '/'
                             CharacterAndStep {
                                 next: ' ',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Div )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::Div )
                             }
                         ]
                     }
@@ -999,12 +424,12 @@ pub fn initialize_lookup () -> TokenLookup {
                             // '%='
                             CharacterAndStep {
                                 next: '=',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::ModEq )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::ModEq )
                             },
                             // '%'
                             CharacterAndStep {
                                 next: ' ',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::Mod )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::Mod )
                             }
                         ]
                     }
@@ -1013,37 +438,37 @@ pub fn initialize_lookup () -> TokenLookup {
             // Tokens beginning with '('
             CharacterAndStep {
                 next: '(',
-                step: LookupOrEnd::None( "", TokensOfInterest::OpenParen )
+                step: LookupOrEnd::None( def_regex.clone(), TokensOfInterest::OpenParen )
             },
             // Tokens beginning with '['
             CharacterAndStep {
                 next: '[',
-                step: LookupOrEnd::None( "", TokensOfInterest::OpenBrack )
+                step: LookupOrEnd::None( def_regex.clone(), TokensOfInterest::OpenBrack )
             },
             // Tokens beginning with ']'
             CharacterAndStep {
                 next: ')',
-                step: LookupOrEnd::None( "", TokensOfInterest::CloseParen )
+                step: LookupOrEnd::None( def_regex.clone(), TokensOfInterest::CloseParen )
             },
             // Tokens beginning with ')'
             CharacterAndStep {
                 next: ']',
-                step: LookupOrEnd::None( "", TokensOfInterest::CloseBrack )
+                step: LookupOrEnd::None( def_regex.clone(), TokensOfInterest::CloseBrack )
             },
             // Tokens beginning with ','
             CharacterAndStep {
                 next: ',',
-                step: LookupOrEnd::None( "", TokensOfInterest::Comma )
+                step: LookupOrEnd::None( def_regex.clone(), TokensOfInterest::Comma )
             },
             // Tokens beginning with ':'
             CharacterAndStep {
                 next: ':',
-                step: LookupOrEnd::None( "", TokensOfInterest::Colon )
+                step: LookupOrEnd::None( def_regex.clone(), TokensOfInterest::Colon )
             },
             // Tokens beginning with '.'
             CharacterAndStep {
                 next: '.',
-                step: LookupOrEnd::None( "", TokensOfInterest::Dot )
+                step: LookupOrEnd::None( def_regex.clone(), TokensOfInterest::Dot )
             },
             
             // Tokens beginning with 'in'
@@ -1061,12 +486,12 @@ pub fn initialize_lookup () -> TokenLookup {
                                             // 'in'
                                             CharacterAndStep {
                                                 next: ' ',
-                                                step: LookupOrEnd::None ( "", TokensOfInterest::In )
+                                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::In )
                                             },
                                             // 'instanceof'
                                             CharacterAndStep {
                                                 next: 's',
-                                                step: LookupOrEnd::None ( "tanceof", TokensOfInterest::Instanceof  )
+                                                step: LookupOrEnd::None ( Regex::new("tanceof\\s?$").unwrap(), TokensOfInterest::Instanceof  )
                                             }
                                         ]
                                     }
@@ -1074,7 +499,7 @@ pub fn initialize_lookup () -> TokenLookup {
                             },
                             CharacterAndStep {
                                 next: 'f',
-                                step: LookupOrEnd::None ( "", TokensOfInterest::If )
+                                step: LookupOrEnd::None ( def_regex.clone(), TokensOfInterest::If )
                             },
                         ]
                     }
@@ -1084,40 +509,37 @@ pub fn initialize_lookup () -> TokenLookup {
             // Tokens beginning with 'o'
             CharacterAndStep {
                 next: 'o',
-                step: LookupOrEnd::None ( "f", TokensOfInterest::Of )
+                step: LookupOrEnd::None ( Regex::new("f\\s?$").unwrap(), TokensOfInterest::Of )
             },
 
             // Tokens beginning with 't'
             CharacterAndStep {
                 next: 't',
-                step: LookupOrEnd::None ( "ypeof", TokensOfInterest::Typeof )
+                step: LookupOrEnd::None ( Regex::new("ypeof\\s?$").unwrap(), TokensOfInterest::Typeof )
             },
 
             // Tokens beginning with 's'
             CharacterAndStep {
                 next: 's',
-                step: LookupOrEnd::None ( "witch", TokensOfInterest::Switch )
+                step: LookupOrEnd::None ( Regex::new("witch\\s?$").unwrap(), TokensOfInterest::Switch )
             },
 
             // Tokens beginning with 'd'
             CharacterAndStep {
                 next: 'd',
-                step: LookupOrEnd::None ( "elete", TokensOfInterest::Delete )
+                step: LookupOrEnd::None ( Regex::new("elete\\s?$").unwrap(), TokensOfInterest::Delete )
             },
 
             // Tokens beginning with 'n'
             CharacterAndStep {
                 next: 'n',
-                step: LookupOrEnd::None ( "ew", TokensOfInterest::New )
+                step: LookupOrEnd::None ( Regex::new("ew\\s?$").unwrap(), TokensOfInterest::New )
             },
         ]
     }
 }
 
-
-
 use std::str;
-
 
 #[allow(non_snake_case)]
 pub fn lookup_token (token: &[u8], lookup_table: &TokenLookup) -> TokensOfInterest {
@@ -1147,7 +569,7 @@ pub fn lookup_token (token: &[u8], lookup_table: &TokenLookup) -> TokensOfIntere
                     println!("Rem str: {:?}", next_token);
                     println!("RDLP: {:?}", RDLP);
 
-                    if str::from_utf8(next_token).unwrap() == *RDLP {
+                    if RDLP.is_match(str::from_utf8(next_token).unwrap()) {
                         return *result
                     }
                 }

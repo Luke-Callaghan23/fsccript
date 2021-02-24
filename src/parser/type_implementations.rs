@@ -1,6 +1,6 @@
 pub mod type_implementations {
     use std::fmt;
-    use crate::types::{
+    use crate::parser::types::{
         CompilationTarget,
         FileContent,
         Compilable

@@ -1,4 +1,4 @@
-use crate::types::*;
+use crate::parser::types::*;
 use std::fs;
 use std::io::prelude::*;
 use itertools::interleave;

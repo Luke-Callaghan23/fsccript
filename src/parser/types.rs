@@ -1,4 +1,8 @@
-use crate::transpiler::types::Transpilation;
+use crate::transpiler::types::{
+    Transpilation
+};
+
+use crate::transpiler::implementations::implementations::CompileType;
 
 /// Structure of a .fjs file compilation target 
 /// Contains the name of the raw file: file_name, a FileContent variant 
@@ -39,15 +43,6 @@ pub struct ParsedFile {
     pub compilable_sections: Vec<Compilable>,   // vector of the .fjs expressions that will be compiled before being pasted into the output file
 }
 
-/// Enumeration of the types of compilation that can occur
-/// Obviously, this enum will be expanded in future, after more releases
-pub enum CompileType {
-    If    ,                                     // compilation targeting an if, or if-else statement
-    Switch,                                     // compilation targeting a switch statement
-}
-
-
-
 /// Structure of a transpilable section of .fjs code
 /// Includes the type of compilation, and the snippet of code that the compilation
 ///         on which the compilation will occur
@@ -55,4 +50,5 @@ pub struct Compilable {
     pub comp_type: CompileType,                 // The type of compilation that will occur
     pub content: Transpilation                  // The raw .fjs code that will be compiled into vanilla .js
 }
+
 
