@@ -1,0 +1,39 @@
+use crate::transpiler::types::{CompileType, CompilationInstructions};
+use std::str;
+
+pub fn implement_<your compilable element></your> () -> CompilationInstructions {
+    CompilationInstructions {
+        comp_type: CompileType::<your compilable element>,
+        check: Box::new(check_<your compilable element>),
+        parse: Box::new(parse_<your compilable element>),
+        transpile: Box::new(transpile_<your compilable element>)
+    }
+}
+
+
+fn check_<your compilable element> (data: &[u8], _start_index: usize) -> bool {
+    // return true if data starting at start index is an appropriate start
+    //      of the parsed element -- returning true, does not guarentee that
+    //      the parsable section is well-formed, just that it meets the bare
+    //      minimum requirement of it being the possibility
+}
+
+fn parse_<your compilable element> (data: &[u8]) -> Option<CompilationInfo> {
+    // recieve a string of bytes that the above function has determined to be the 
+    //      the beginning part of a this compilable element
+    // returns the whole part of the compilable section of the beginning of the string,
+    //      and the remaining string ( or None, if it's not compilable)
+    Some (CompilationInfo { 
+        fjs_block: b"",    // first return value is the parsed-out section of the input data slice
+        remaining: b""     // Second return value is all contents after the parsed-out section
+    })
+
+    // or, if the fjs element is not well-formed -- return None
+    //      TODO: (may implement an error system later (TM))
+}
+
+fn transpile_<your compilable element> (data: &[u8]) -> &[u8] {
+    // One-to-one conversion from a parsed section of this compilable element
+    //      to the compiled string of that element
+    b""
+}

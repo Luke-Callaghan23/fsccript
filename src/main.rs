@@ -3,10 +3,12 @@ use std::env;
 mod parser;
 use parser::parser::parser::parse_files;
 use parser::types::{
-    CompilationTarget
+    CompilationTarget,
+    FileContent
 };
 
 mod io;
+use io::read_files::PathAndContents;
 use io::read_files::process_files;
 use io::write_files::write_all;
 
@@ -17,6 +19,15 @@ extern crate regex;
 
 mod transpiler;
 use transpiler::transpiler::transpile_all_targets;
+use transpiler::types::{
+    initialize_compilables,
+    CompilationInstructions,
+};
+
+mod tokenizer;
+use tokenizer::tokenizer::tokenize_targets;
+use tokenizer::token_types::initialize_lookup;
+use tokenizer::token_stream::TokenStream;
 
 
 #[allow(unused_parens)]
@@ -25,14 +36,15 @@ fn main () {
     args.pop();
     
     // Four steps: 
-    //      read files,
-    //      parse files,
-    //      transpile files
-    //      write files
+    //      0. read files,
+    //      1. create CompilationTargets from file contents
+    //      2. tokenize compilation targets into token streams
+    //      3. parse token streams, and compilation targets,
+    //      4. transpile token streams, and compilation targets
+    //      5. write files
 
-
-    // 1. Read all files, store as CompilationTargets in 'targets'
-    let targets: Vec<CompilationTarget> = process_files ((
+    // 1. Read all files, store as Strings
+    let files: Vec<PathAndContents> = process_files ((
         if args.len() > 0 {
             // If arguments were supplied, use them as the paths to compile
             args
@@ -43,15 +55,39 @@ fn main () {
         }
     ));
 
+
+    let targets: Vec<CompilationTarget> = files.iter().map(| file_and_path | {
+        let path = &file_and_path.path;
+        let contents = &file_and_path.contents;
+        // Create CompilationTargets referencing String files
+        // If the file was read successfully, create and return Some,
+        //      compilation target struct
+        CompilationTarget { 
+            input_path: path.to_owned(), 
+            contents: FileContent::Raw( contents.as_bytes() ), 
+            output_path: path.to_owned().replace(".fjs", ".js")
+        }
+
+    }).collect();
+
+
+
+
+    let token_lookup = initialize_lookup();
+    let compilation_instructions = initialize_compilables();
+
+    // 2. tokenize the files
+    let tokenized = tokenize_targets(targets, &token_lookup);
+
     // 2. parse all files, store as CompilationTargets in 'parsed_targets'
-    let parsed_target = parse_files(targets);
+    let parsed_target = parse_files(tokenized, &compilation_instructions, &token_lookup);
 
 
-    // 3. transpile all parsed files, store in transpiled in 'transpiled'
-    let transpiled_targets = transpile_all_targets(parsed_target);
+    // // 3. transpile all parsed files, store in transpiled in 'transpiled'
+    // let transpiled_targets = transpile_all_targets(parsed_target);
 
-    // 4.
-    write_all(transpiled_targets);
+    // // 4.
+    // write_all(transpiled_targets);
 
     println!("Finished.");
 }

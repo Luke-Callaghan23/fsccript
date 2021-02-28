@@ -48,7 +48,7 @@ fn write_single (compiled_file: CompilationTarget) {
                     )
                     // Fold the interleaved iterator into a single string
                     .fold(String::from(""), | mut acc, x | {
-                        acc.push_str(x.as_str());
+                        acc.push_str(std::str::from_utf8(x).unwrap());
                         acc
                     })
                 );

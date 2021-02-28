@@ -1,9 +1,10 @@
 use std::fs;
 
-use crate::parser::types::{
-    CompilationTarget,
-    FileContent
-};
+
+pub struct PathAndContents {
+    pub path: String,
+    pub contents: String
+}
 
 /// Function to process a list of string paths to files into a vector of
 ///         compilation target structs to be compiles
@@ -12,12 +13,16 @@ use crate::parser::types::{
 /// 
 /// # Returns 
 /// * Vector of Compilation targets contained in the directory
-pub fn process_files (files: Vec<String>) -> Vec<CompilationTarget> {
-    let mut targets: Vec<CompilationTarget> = Vec::new();
-    for file in files { 
-        let path = &file;
+pub fn process_files <'a> (files: Vec<String>) -> Vec<PathAndContents> {
+    // let mut targets: Vec<PathAndContents> = Vec::new();
+    // for file in files { 
+        
+    // }
+
+    files.into_iter().map(| file | {
+        let path = file;
         // Getting the metadata of the target path, to check if the
-        match fs::metadata(path) {
+        match fs::metadata(&path) {
             Ok (metadata) => {
                 if metadata.is_file() {
                     if path.ends_with(".fjs") {
@@ -25,27 +30,30 @@ pub fn process_files (files: Vec<String>) -> Vec<CompilationTarget> {
                         //      into a Some CompilationTarget, and add it to the targets
                         //      vector
                         if let Some ( target ) = process_file(path) {
-                            targets.push(target);
-                        }                                    
+                            Some( vec![target] )
+                        }
+                        else { None }                              
                     }
+                    else { None }
                 }
                 else if metadata.is_dir() {
-                    // If the entry is a directory call process_directory, and group,
-                    //      all CompilationTargets from that directory into the targets
-                    //      vector
-                    targets.extend (
-                        process_dir(path)
-                    );
+                    // If the entry is a directory call process_directory, and return
+                    //      the retrieved vector
+                    Some( process_dir(path) )
                 }
+                else { None }
             },
             // Otherwise, report the error
             Err(err) => {
                 println!("Error opening file {} !", path);
                 println!("Error: {}", err);
+                None
             }
         }
-    }
-    targets
+    })
+    .flatten()
+    .flatten()
+    .collect()
 }
 
 /// Function to process all compilable files in a directory into Compilation target 
@@ -55,12 +63,12 @@ pub fn process_files (files: Vec<String>) -> Vec<CompilationTarget> {
 /// 
 /// # Returns 
 /// * Vector of Compilation targets contained in the directory
-fn process_dir (path: &String) -> Vec<CompilationTarget> {
+fn process_dir <'a>(path: String) -> Vec<PathAndContents> {
     println!("{}", path);
     process_files (
         // Call process file with a mapping from directory items, to 
         //      a String path of that entry
-        fs::read_dir(path).unwrap().map(| entry | {
+        fs::read_dir(&path).unwrap().map(| entry | {
             match entry {
                 Ok(entry) => {
                     // If the entry was read successfully, return Some,
@@ -90,19 +98,16 @@ fn process_dir (path: &String) -> Vec<CompilationTarget> {
 /// * Optional enum of the CompilationTarget based of the path file, return None if
 ///         there was an error opening the file
 #[allow(unused_parens)]
-fn process_file (path: &String) -> Option<CompilationTarget> {   
-    match fs::read_to_string(path) {
+fn process_file <'a> (path: String) -> Option<PathAndContents> {   
+    match fs::read_to_string(&path) {
         // If the file has the .fjs extension, create a CompilationTarget
         //      struct for that file and return it
-        Ok( contents ) => {
+        Ok( contents) => {
             println!("Got file {}!", path);
             Some (
-                // If the file was read successfully, create and return Some,
-                //      compilation target struct
-                CompilationTarget { 
-                    input_path: path.to_owned(), 
-                    contents: FileContent::Raw( contents ), 
-                    output_path: path.to_owned().replace(".fjs", ".js")
+                PathAndContents {
+                    path: path,
+                    contents: contents
                 }
             )
         },
