@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use crate::parser::types::{
+use crate::types::types::{
     FileContent,
     CompilationTarget,
     TranspiledFile

@@ -1,4 +1,4 @@
-use crate::transpiler::implementations::{fscript_if, fscript_switch};
+use crate::{tokenizer::types::TokenStream, transpiler::implementations::{fscript_if, fscript_switch}};
 
 /// Enumeration of the types of compilation that can occur
 /// Obviously, this enum will be expanded in future, after more releases
@@ -10,14 +10,14 @@ pub enum CompileType {
 
 
 pub struct CompilationInfo<'a> {
-    pub fjs_block: &'a [u8],
-    pub remaining: &'a [u8],
-    pub comp_info: Info
+    pub rem_stream: TokenStream<'a>,
+    pub compilation_stream: TokenStream<'a>,
+    pub comp_info: Info<'a>
 }
 
-pub enum Info {
-      IfInfo   (     fscript_if::IfInfo     ),
-    SwitchInfo ( fscript_switch::SwitchInfo ),
+pub enum Info <'a> {
+    IfInfo   (     fscript_if::IfInfo<'a>     ),
+    SwitchInfo ( fscript_switch::SwitchInfo<'a> ),
     None
 }
 
@@ -42,9 +42,9 @@ pub enum Info {
 ///             convert an element of fjs code into vanilla js
 pub struct CompilationInstructions {
     pub comp_type:      CompileType,
-    pub check:          Box<dyn Fn(&[u8], usize) -> bool>,
-    pub parse:          Box<dyn for<'a> Fn(&'a [u8]) -> Option<CompilationInfo<'a>>>,    
-    pub transpile:      Box<dyn Fn(&[u8], Info) -> &[u8]>
+    pub check:          Box<dyn for<'a> Fn(&'a TokenStream<'a>) -> bool>,
+    pub parse:          Box<dyn for<'a> Fn(&'a TokenStream<'a>) -> Option<CompilationInfo<'a>>>,    
+    pub transpile:      Box<dyn for<'a> Fn(&'a [u8], Info) -> &'a [u8]>
 }
 
 pub type InstructionsSet = [CompilationInstructions; 2 /* <-- increment this */];

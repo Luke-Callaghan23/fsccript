@@ -12,11 +12,11 @@ mod tests {
 
         let string: &str = "%";
 
-        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokensOfInterest::None);
+        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokenOfInterest::None);
 
         println!("{:?}", res);
 
-        assert_eq!(res, TokensOfInterest::Mod);
+        assert_eq!(res, TokenOfInterest::Mod);
     }
     #[test]
     // Most basic lookup
@@ -26,11 +26,11 @@ mod tests {
 
         let string: &str = "%%";
 
-        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokensOfInterest::None);
+        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokenOfInterest::None);
 
         println!("{:?}", res);
 
-        assert_eq!(res, TokensOfInterest::Mod);
+        assert_eq!(res, TokenOfInterest::Mod);
     }
     
     #[test]
@@ -40,10 +40,10 @@ mod tests {
         let lookup_table = initialize_lookup();
 
         let string: &str = ">>>";
-        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokensOfInterest::None);
+        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokenOfInterest::None);
         // println!("{:?}", lookup_token(string.as_bytes(), &lookup_table));
 
-        assert_eq!(res, TokensOfInterest::ShRZeroFill);
+        assert_eq!(res, TokenOfInterest::ShRZeroFill);
     }
 
     
@@ -54,10 +54,10 @@ mod tests {
         let lookup_table = initialize_lookup();
 
         let string: &str = ">>>=";
-        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokensOfInterest::None);
+        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokenOfInterest::None);
         // println!("{:?}", lookup_token(string.as_bytes(), &lookup_table));
 
-        assert_eq!(res, TokensOfInterest::ShRZeroFillEq);
+        assert_eq!(res, TokenOfInterest::ShRZeroFillEq);
     }
     
     #[test]
@@ -67,10 +67,10 @@ mod tests {
         let lookup_table = initialize_lookup();
 
         let string: &str = "instanceof";
-        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokensOfInterest::None);
+        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokenOfInterest::None);
         // println!("{:?}", lookup_token(string.as_bytes(), &lookup_table));
 
-        assert_eq!(res, TokensOfInterest::Instanceof);
+        assert_eq!(res, TokenOfInterest::Instanceof);
     }
     
     #[test]
@@ -80,10 +80,10 @@ mod tests {
         let lookup_table = initialize_lookup();
 
         let string: &str = "typeof";
-        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokensOfInterest::None);
+        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokenOfInterest::None);
         // println!("{:?}", lookup_token(string.as_bytes(), &lookup_table));
 
-        assert_eq!(res, TokensOfInterest::Typeof);
+        assert_eq!(res, TokenOfInterest::Typeof);
     }
     
     
@@ -94,10 +94,10 @@ mod tests {
         let lookup_table = initialize_lookup();
 
         let string: &str = "string";
-        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokensOfInterest::None);
+        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokenOfInterest::None);
         // println!("{:?}", lookup_token(string.as_bytes(), &lookup_table));
 
-        assert_eq!(res, TokensOfInterest::None);
+        assert_eq!(res, TokenOfInterest::None);
     }
     
     #[test]
@@ -107,9 +107,9 @@ mod tests {
         let lookup_table = initialize_lookup();
 
         let string: &str = "typeoff";
-        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokensOfInterest::None);
+        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokenOfInterest::None);
 
-        assert_eq!(res, TokensOfInterest::None);
+        assert_eq!(res, TokenOfInterest::None);
     }
     #[test]
     // Testing a failed lookup
@@ -118,9 +118,9 @@ mod tests {
         let lookup_table = initialize_lookup();
 
         let string: &str = "a&";
-        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokensOfInterest::None);
+        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokenOfInterest::None);
 
-        assert_eq!(res, TokensOfInterest::None);
+        assert_eq!(res, TokenOfInterest::None);
     }
     #[test]
     // Testing a failed lookup
@@ -129,9 +129,9 @@ mod tests {
         let lookup_table = initialize_lookup();
 
         let string: &str = "b break";
-        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokensOfInterest::None);
+        let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokenOfInterest::None);
 
-        assert_eq!(res, TokensOfInterest::None);
+        assert_eq!(res, TokenOfInterest::None);
     }
     
     #[test]
@@ -140,72 +140,72 @@ mod tests {
 
         let lookup_table = initialize_lookup();
 
-        let tests: Vec<(&str, TokensOfInterest)> = vec![
-            ("&", TokensOfInterest::BitAnd), 
-            ("&=", TokensOfInterest::BitAndEq), 
-            ("&&", TokensOfInterest::LogAnd), 
-            ("|", TokensOfInterest::BitOr ), 
-            ("|=", TokensOfInterest::BitOrEq ), 
-            ("||", TokensOfInterest::LogOr), 
-            ("^", TokensOfInterest::BitXor), 
-            ("^=", TokensOfInterest::BitXorEq), 
-            ("~", TokensOfInterest::BitNot), 
-            ("~=", TokensOfInterest::BitNotEq), 
-            ("=", TokensOfInterest::Assign), 
-            ("==", TokensOfInterest::WeakEq), 
-            ("===", TokensOfInterest::StrictEq),
-            ("!", TokensOfInterest::Not), 
-            ("!=", TokensOfInterest::NotEq), 
-            ("!==", TokensOfInterest::StrictNotEq),
-            (">", TokensOfInterest::Gt), 
-            (">=", TokensOfInterest::Ge), 
-            (">>", TokensOfInterest::ShR), 
-            (">>=", TokensOfInterest::ShREq), 
-            (">>>", TokensOfInterest::ShRZeroFill), 
-            (">>>=", TokensOfInterest::ShRZeroFillEq),
-            ("<", TokensOfInterest::Lt), 
-            ("<=", TokensOfInterest::Le), 
-            ("<<", TokensOfInterest::ShL), 
-            ("<<=", TokensOfInterest::ShLEq),
-            ("+", TokensOfInterest::Add), 
-            ("+=", TokensOfInterest::AddEq), 
-            ("++", TokensOfInterest::Inc), 
-            ("-", TokensOfInterest::Sub), 
-            ("-=", TokensOfInterest::SubEq), 
-            ("--", TokensOfInterest::Dec), 
-            ("*", TokensOfInterest::Mul), 
-            ("*=", TokensOfInterest::MulEq), 
-            ("/", TokensOfInterest::Div), 
-            ("/=", TokensOfInterest::DivEq), 
-            ("%", TokensOfInterest::Mod), 
-            ("%=", TokensOfInterest::ModEq), 
-            ("(", TokensOfInterest::OpenParen), 
-            ("[", TokensOfInterest::OpenBrack),
-            (":", TokensOfInterest::Colon), 
-            (",", TokensOfInterest::Comma),
-            ("delete", TokensOfInterest::Delete), 
-            ("typeof", TokensOfInterest::Typeof), 
-            ("in", TokensOfInterest::In), 
-            ("instanceof", TokensOfInterest::Instanceof), 
-            ("of", TokensOfInterest::Of),
-            ("new", TokensOfInterest::New), 
-            (".", TokensOfInterest::Dot),
-            ("if", TokensOfInterest::If),
-            ("switch", TokensOfInterest::Switch),
-            ("]", TokensOfInterest::CloseBrack),
-            (")", TokensOfInterest::CloseParen),
-            ("{", TokensOfInterest::OpenCurly),
-            ("}", TokensOfInterest::CloseCurly),
-            ("else", TokensOfInterest::Else),
-            ("case", TokensOfInterest::Case),
-            ("return", TokensOfInterest::Return),
-            (";", TokensOfInterest::Semicolon),
-            ("default", TokensOfInterest::Default),
-            ("break", TokensOfInterest::Break),
+        let tests: Vec<(&str, TokenOfInterest)> = vec![
+            ("&", TokenOfInterest::BitAnd), 
+            ("&=", TokenOfInterest::BitAndEq), 
+            ("&&", TokenOfInterest::LogAnd), 
+            ("|", TokenOfInterest::BitOr ), 
+            ("|=", TokenOfInterest::BitOrEq ), 
+            ("||", TokenOfInterest::LogOr), 
+            ("^", TokenOfInterest::BitXor), 
+            ("^=", TokenOfInterest::BitXorEq), 
+            ("~", TokenOfInterest::BitNot), 
+            ("~=", TokenOfInterest::BitNotEq), 
+            ("=", TokenOfInterest::Assign), 
+            ("==", TokenOfInterest::WeakEq), 
+            ("===", TokenOfInterest::StrictEq),
+            ("!", TokenOfInterest::Not), 
+            ("!=", TokenOfInterest::NotEq), 
+            ("!==", TokenOfInterest::StrictNotEq),
+            (">", TokenOfInterest::Gt), 
+            (">=", TokenOfInterest::Ge), 
+            (">>", TokenOfInterest::ShR), 
+            (">>=", TokenOfInterest::ShREq), 
+            (">>>", TokenOfInterest::ShRZeroFill), 
+            (">>>=", TokenOfInterest::ShRZeroFillEq),
+            ("<", TokenOfInterest::Lt), 
+            ("<=", TokenOfInterest::Le), 
+            ("<<", TokenOfInterest::ShL), 
+            ("<<=", TokenOfInterest::ShLEq),
+            ("+", TokenOfInterest::Add), 
+            ("+=", TokenOfInterest::AddEq), 
+            ("++", TokenOfInterest::Inc), 
+            ("-", TokenOfInterest::Sub), 
+            ("-=", TokenOfInterest::SubEq), 
+            ("--", TokenOfInterest::Dec), 
+            ("*", TokenOfInterest::Mul), 
+            ("*=", TokenOfInterest::MulEq), 
+            ("/", TokenOfInterest::Div), 
+            ("/=", TokenOfInterest::DivEq), 
+            ("%", TokenOfInterest::Mod), 
+            ("%=", TokenOfInterest::ModEq), 
+            ("(", TokenOfInterest::OpenParen), 
+            ("[", TokenOfInterest::OpenBrack),
+            (":", TokenOfInterest::Colon), 
+            (",", TokenOfInterest::Comma),
+            ("delete", TokenOfInterest::Delete), 
+            ("typeof", TokenOfInterest::Typeof), 
+            ("in", TokenOfInterest::In), 
+            ("instanceof", TokenOfInterest::Instanceof), 
+            ("of", TokenOfInterest::Of),
+            ("new", TokenOfInterest::New), 
+            (".", TokenOfInterest::Dot),
+            ("if", TokenOfInterest::If),
+            ("switch", TokenOfInterest::Switch),
+            ("]", TokenOfInterest::CloseBrack),
+            (")", TokenOfInterest::CloseParen),
+            ("{", TokenOfInterest::OpenCurly),
+            ("}", TokenOfInterest::CloseCurly),
+            ("else", TokenOfInterest::Else),
+            ("case", TokenOfInterest::Case),
+            ("return", TokenOfInterest::Return),
+            (";", TokenOfInterest::Semicolon),
+            ("default", TokenOfInterest::Default),
+            ("break", TokenOfInterest::Break),
         ];
 
         for (string, target) in tests {
-            let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokensOfInterest::None);
+            let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokenOfInterest::None);
             assert_eq!(res, target);
         }
 

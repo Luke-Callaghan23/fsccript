@@ -12,219 +12,348 @@ pub struct Step {
 #[derive(Debug)]
 pub enum Lookup {
     Lookup ( TokenLookup ),
-    None ( regex::Regex, TokensOfInterest )
+    None ( regex::Regex, TokenOfInterest )
 }
 
 #[allow(non_snake_case)]
 #[derive(Debug)]
 pub struct End {
     pub RDLP: regex::Regex,
-    pub token: TokensOfInterest,
+    pub token: TokenOfInterest,
 }
 
 
 /// # get_token_len
 ///
-/// Function that maps a TokensOfInterest enum to a length of that
-///     enum.  For every TokensOfInterest, there is a direct mapping
+/// Function that maps a TokenOfInterest enum to a length of that
+///     enum.  For every TokenOfInterest, there is a direct mapping
 ///     for the length of that token.
 ///
 /// ## Parameters -- 
-/// * `token: TokensOfInterest` -- The token whose length to search for
+/// * `token: TokenOfInterest` -- The token whose length to search for
 ///
 /// ## Returns -- 
 /// * `u8` -- length of the token
 ///
 /// .
-pub fn get_token_len (token: &TokensOfInterest) -> u8 {
+pub fn get_token_len (token: &TokenOfInterest) -> u8 {
     match token {
         // 0
-        TokensOfInterest::EOF                    |
-        TokensOfInterest::BOF                    |
-        TokensOfInterest::None                   => 0,
+        TokenOfInterest::EOF                    |
+        TokenOfInterest::BOF                    |
+        TokenOfInterest::None                   => 0,
 
         // 1
-        TokensOfInterest::BitAnd                 |
-        TokensOfInterest::BitOr                  |
-        TokensOfInterest::BitXor                 |
-        TokensOfInterest::BitNot                 |
-        TokensOfInterest::Assign                 |
-        TokensOfInterest::Not                    |
-        TokensOfInterest::Add                    |
-        TokensOfInterest::Sub                    |
-        TokensOfInterest::Mul                    |
-        TokensOfInterest::Div                    |
-        TokensOfInterest::Mod                    |
-        TokensOfInterest::OpenParen              |
-        TokensOfInterest::OpenBrack              |
-        TokensOfInterest::OpenCurly              |
-        TokensOfInterest::CloseParen             |
-        TokensOfInterest::CloseBrack             |
-        TokensOfInterest::CloseCurly             |
-        TokensOfInterest::Colon                  |
-        TokensOfInterest::Semicolon              |
-        TokensOfInterest::Comma                  |
-        TokensOfInterest::StringSingle           |
-        TokensOfInterest::StringDouble           | 
-        TokensOfInterest::StringBackTick         |
-        TokensOfInterest::SingleLineCommentClose |
-        TokensOfInterest::Dot                    => 1,
+        TokenOfInterest::BitAnd                 |
+        TokenOfInterest::BitOr                  |
+        TokenOfInterest::BitXor                 |
+        TokenOfInterest::BitNot                 |
+        TokenOfInterest::Assign                 |
+        TokenOfInterest::Not                    |
+        TokenOfInterest::Add                    |
+        TokenOfInterest::Sub                    |
+        TokenOfInterest::Mul                    |
+        TokenOfInterest::Div                    |
+        TokenOfInterest::Mod                    |
+        TokenOfInterest::OpenParen              |
+        TokenOfInterest::OpenBrack              |
+        TokenOfInterest::OpenCurly              |
+        TokenOfInterest::CloseParen             |
+        TokenOfInterest::CloseBrack             |
+        TokenOfInterest::CloseCurly             |
+        TokenOfInterest::Colon                  |
+        TokenOfInterest::Semicolon              |
+        TokenOfInterest::Comma                  |
+        TokenOfInterest::StringSingle           |
+        TokenOfInterest::StringDouble           | 
+        TokenOfInterest::StringBackTick         |
+        TokenOfInterest::SingleLineCommentClose |
+        TokenOfInterest::Dot                    => 1,
 
 
         // 2
-        TokensOfInterest::BitAndEq               | 
-        TokensOfInterest::LogAnd                 | 
-        TokensOfInterest::BitOrEq                | 
-        TokensOfInterest::LogOr                  | 
-        TokensOfInterest::BitXorEq               | 
-        TokensOfInterest::BitNotEq               | 
-        TokensOfInterest::WeakEq                 | 
-        TokensOfInterest::ArrowFunction          | 
-        TokensOfInterest::NotEq                  | 
-        TokensOfInterest::Gt                     | 
-        TokensOfInterest::Ge                     | 
-        TokensOfInterest::ShR                    | 
-        TokensOfInterest::Lt                     | 
-        TokensOfInterest::Le                     | 
-        TokensOfInterest::ShL                    | 
-        TokensOfInterest::AddEq                  | 
-        TokensOfInterest::SubEq                  | 
-        TokensOfInterest::MulEq                  | 
-        TokensOfInterest::DivEq                  | 
-        TokensOfInterest::ModEq                  | 
-        TokensOfInterest::In                     | 
-        TokensOfInterest::Of                     | 
-        TokensOfInterest::If                     | 
-        TokensOfInterest::Inc                    | 
-        TokensOfInterest::SingleLineCommentOpen  |
-        TokensOfInterest::MultiLineCommentOpen   |
-        TokensOfInterest::MultiLineCommentClose  |
-        TokensOfInterest::Dec                    => 2,
+        TokenOfInterest::BitAndEq               | 
+        TokenOfInterest::LogAnd                 | 
+        TokenOfInterest::BitOrEq                | 
+        TokenOfInterest::LogOr                  | 
+        TokenOfInterest::BitXorEq               | 
+        TokenOfInterest::BitNotEq               | 
+        TokenOfInterest::WeakEq                 | 
+        TokenOfInterest::ArrowFunction          | 
+        TokenOfInterest::NotEq                  | 
+        TokenOfInterest::Gt                     | 
+        TokenOfInterest::Ge                     | 
+        TokenOfInterest::ShR                    | 
+        TokenOfInterest::Lt                     | 
+        TokenOfInterest::Le                     | 
+        TokenOfInterest::ShL                    | 
+        TokenOfInterest::AddEq                  | 
+        TokenOfInterest::SubEq                  | 
+        TokenOfInterest::MulEq                  | 
+        TokenOfInterest::DivEq                  | 
+        TokenOfInterest::ModEq                  | 
+        TokenOfInterest::In                     | 
+        TokenOfInterest::Of                     | 
+        TokenOfInterest::If                     | 
+        TokenOfInterest::Inc                    | 
+        TokenOfInterest::SingleLineCommentOpen  |
+        TokenOfInterest::MultiLineCommentOpen   |
+        TokenOfInterest::MultiLineCommentClose  |
+        TokenOfInterest::Dec                    => 2,
          
          
         // 3 
-        TokensOfInterest::StrictEq               |
-        TokensOfInterest::ShREq                  |
-        TokensOfInterest::StrictNotEq            |
-        TokensOfInterest::ShRZeroFill            |
-        TokensOfInterest::ShLEq                  |
-        TokensOfInterest::New                    => 3,
+        TokenOfInterest::StrictEq               |
+        TokenOfInterest::ShREq                  |
+        TokenOfInterest::StrictNotEq            |
+        TokenOfInterest::ShRZeroFill            |
+        TokenOfInterest::ShLEq                  |
+        TokenOfInterest::New                    => 3,
          
         // 5
-        TokensOfInterest::Break                  => 5,
+        TokenOfInterest::Break                  => 5,
 
         // 4 
-        TokensOfInterest::Case                   |
-        TokensOfInterest::Else                   |
-        TokensOfInterest::ShRZeroFillEq          => 4,
+        TokenOfInterest::Case                   |
+        TokenOfInterest::Else                   |
+        TokenOfInterest::ShRZeroFillEq          => 4,
          
         // 6 
-        TokensOfInterest::Return                 |
-        TokensOfInterest::Delete                 |
-        TokensOfInterest::Typeof                 |
-        TokensOfInterest::Switch                 => 6,
+        TokenOfInterest::Return                 |
+        TokenOfInterest::Delete                 |
+        TokenOfInterest::Typeof                 |
+        TokenOfInterest::Switch                 => 6,
  
-        TokensOfInterest::Default                => 7,
+        TokenOfInterest::Default                => 7,
 
         // 10 
-        TokensOfInterest::Instanceof             => 10,
+        TokenOfInterest::Instanceof             => 10,
         
     }
 }
 
 
-pub fn get_end_token (token: &TokensOfInterest) -> TokensOfInterest {
+pub fn get_end_token (token: &TokenOfInterest) -> TokenOfInterest {
     match token {
         // Opening tokens
-        TokensOfInterest::OpenParen              => TokensOfInterest::CloseParen,
-        TokensOfInterest::OpenBrack              => TokensOfInterest::CloseBrack,
-        TokensOfInterest::OpenCurly              => TokensOfInterest::CloseCurly,
-        TokensOfInterest::StringSingle           => TokensOfInterest::StringSingle,  
-        TokensOfInterest::StringDouble           => TokensOfInterest::StringDouble,   
-        TokensOfInterest::StringBackTick         => TokensOfInterest::StringBackTick,  
-        TokensOfInterest::SingleLineCommentOpen  => TokensOfInterest::SingleLineCommentClose,
-        TokensOfInterest::MultiLineCommentOpen   => TokensOfInterest::MultiLineCommentClose,
-        TokensOfInterest::Case                   => TokensOfInterest::Break,
-        TokensOfInterest::Default                => TokensOfInterest::Break,
+        TokenOfInterest::OpenParen              => TokenOfInterest::CloseParen,
+        TokenOfInterest::OpenBrack              => TokenOfInterest::CloseBrack,
+        TokenOfInterest::OpenCurly              => TokenOfInterest::CloseCurly,
+        TokenOfInterest::StringSingle           => TokenOfInterest::StringSingle,  
+        TokenOfInterest::StringDouble           => TokenOfInterest::StringDouble,   
+        TokenOfInterest::StringBackTick         => TokenOfInterest::StringBackTick,  
+        TokenOfInterest::SingleLineCommentOpen  => TokenOfInterest::SingleLineCommentClose,
+        TokenOfInterest::MultiLineCommentOpen   => TokenOfInterest::MultiLineCommentClose,
+        TokenOfInterest::Case                   => TokenOfInterest::Break,
+        TokenOfInterest::Default                => TokenOfInterest::Break,
         
         // All other tokens --> None
-        TokensOfInterest::Break                  |
-        TokensOfInterest::Else                   |
-        TokensOfInterest::Return                 |
-        TokensOfInterest::Semicolon              |
-        TokensOfInterest::BOF                    |
-        TokensOfInterest::EOF                    |
-        TokensOfInterest::BitAnd                 |
-        TokensOfInterest::BitOr                  |
-        TokensOfInterest::BitXor                 |
-        TokensOfInterest::BitNot                 |
-        TokensOfInterest::Assign                 |
-        TokensOfInterest::Not                    |
-        TokensOfInterest::Add                    |
-        TokensOfInterest::Sub                    |
-        TokensOfInterest::Mul                    |
-        TokensOfInterest::Div                    |
-        TokensOfInterest::Mod                    |
-        TokensOfInterest::CloseParen             |
-        TokensOfInterest::CloseBrack             |
-        TokensOfInterest::CloseCurly             |
-        TokensOfInterest::Colon                  |
-        TokensOfInterest::Comma                  |
-        TokensOfInterest::SingleLineCommentClose |
-        TokensOfInterest::Dot                    |
-        TokensOfInterest::None                   |
-        TokensOfInterest::BitAndEq               | 
-        TokensOfInterest::LogAnd                 | 
-        TokensOfInterest::BitOrEq                | 
-        TokensOfInterest::LogOr                  | 
-        TokensOfInterest::BitXorEq               | 
-        TokensOfInterest::BitNotEq               | 
-        TokensOfInterest::WeakEq                 | 
-        TokensOfInterest::ArrowFunction          | 
-        TokensOfInterest::NotEq                  | 
-        TokensOfInterest::Gt                     | 
-        TokensOfInterest::Ge                     | 
-        TokensOfInterest::ShR                    | 
-        TokensOfInterest::Lt                     | 
-        TokensOfInterest::Le                     | 
-        TokensOfInterest::ShL                    | 
-        TokensOfInterest::AddEq                  | 
-        TokensOfInterest::SubEq                  | 
-        TokensOfInterest::MulEq                  | 
-        TokensOfInterest::DivEq                  | 
-        TokensOfInterest::ModEq                  | 
-        TokensOfInterest::In                     | 
-        TokensOfInterest::Of                     | 
-        TokensOfInterest::If                     | 
-        TokensOfInterest::Inc                    | 
-        TokensOfInterest::MultiLineCommentClose  |
-        TokensOfInterest::Dec                    |
-        TokensOfInterest::StrictEq               |
-        TokensOfInterest::ShREq                  |
-        TokensOfInterest::StrictNotEq            |
-        TokensOfInterest::ShRZeroFill            |
-        TokensOfInterest::ShLEq                  |
-        TokensOfInterest::New                    |
-        TokensOfInterest::ShRZeroFillEq          |
-        TokensOfInterest::Delete                 |
-        TokensOfInterest::Typeof                 |
-        TokensOfInterest::Switch                 |
-        TokensOfInterest::Instanceof             => TokensOfInterest::None
+        TokenOfInterest::Break                  |
+        TokenOfInterest::Else                   |
+        TokenOfInterest::Return                 |
+        TokenOfInterest::Semicolon              |
+        TokenOfInterest::BOF                    |
+        TokenOfInterest::EOF                    |
+        TokenOfInterest::BitAnd                 |
+        TokenOfInterest::BitOr                  |
+        TokenOfInterest::BitXor                 |
+        TokenOfInterest::BitNot                 |
+        TokenOfInterest::Assign                 |
+        TokenOfInterest::Not                    |
+        TokenOfInterest::Add                    |
+        TokenOfInterest::Sub                    |
+        TokenOfInterest::Mul                    |
+        TokenOfInterest::Div                    |
+        TokenOfInterest::Mod                    |
+        TokenOfInterest::CloseParen             |
+        TokenOfInterest::CloseBrack             |
+        TokenOfInterest::CloseCurly             |
+        TokenOfInterest::Colon                  |
+        TokenOfInterest::Comma                  |
+        TokenOfInterest::SingleLineCommentClose |
+        TokenOfInterest::Dot                    |
+        TokenOfInterest::None                   |
+        TokenOfInterest::BitAndEq               | 
+        TokenOfInterest::LogAnd                 | 
+        TokenOfInterest::BitOrEq                | 
+        TokenOfInterest::LogOr                  | 
+        TokenOfInterest::BitXorEq               | 
+        TokenOfInterest::BitNotEq               | 
+        TokenOfInterest::WeakEq                 | 
+        TokenOfInterest::ArrowFunction          | 
+        TokenOfInterest::NotEq                  | 
+        TokenOfInterest::Gt                     | 
+        TokenOfInterest::Ge                     | 
+        TokenOfInterest::ShR                    | 
+        TokenOfInterest::Lt                     | 
+        TokenOfInterest::Le                     | 
+        TokenOfInterest::ShL                    | 
+        TokenOfInterest::AddEq                  | 
+        TokenOfInterest::SubEq                  | 
+        TokenOfInterest::MulEq                  | 
+        TokenOfInterest::DivEq                  | 
+        TokenOfInterest::ModEq                  | 
+        TokenOfInterest::In                     | 
+        TokenOfInterest::Of                     | 
+        TokenOfInterest::If                     | 
+        TokenOfInterest::Inc                    | 
+        TokenOfInterest::MultiLineCommentClose  |
+        TokenOfInterest::Dec                    |
+        TokenOfInterest::StrictEq               |
+        TokenOfInterest::ShREq                  |
+        TokenOfInterest::StrictNotEq            |
+        TokenOfInterest::ShRZeroFill            |
+        TokenOfInterest::ShLEq                  |
+        TokenOfInterest::New                    |
+        TokenOfInterest::ShRZeroFillEq          |
+        TokenOfInterest::Delete                 |
+        TokenOfInterest::Typeof                 |
+        TokenOfInterest::Switch                 |
+        TokenOfInterest::Instanceof             => TokenOfInterest::None
     }
 }
 
-pub fn token_is_comment_or_string (token: &TokensOfInterest) -> bool {
-    *token == TokensOfInterest::SingleLineCommentOpen ||
-    *token == TokensOfInterest::MultiLineCommentOpen  ||
-    *token == TokensOfInterest::StringSingle          ||
-    *token == TokensOfInterest::StringDouble          ||
-    *token == TokensOfInterest::StringBackTick
+pub fn token_is_comment_or_string (token: &TokenOfInterest) -> bool {
+    *token == TokenOfInterest::SingleLineCommentOpen ||
+    *token == TokenOfInterest::MultiLineCommentOpen  ||
+    *token == TokenOfInterest::StringSingle          ||
+    *token == TokenOfInterest::StringDouble          ||
+    *token == TokenOfInterest::StringBackTick
+}
+
+/// token_types::TokenExpressionType
+///
+/// The type of a token in relation to an expression.  Any given token can be categorized into
+/// 1. A token that comes before an expression
+/// 2. A token that comes after an expression
+/// 3. A token that can come before or after an expression
+/// 4. A token that cannot come before, or after an expression
+///
+/// These categories are needed to identify fjs elements as expressions:
+/// Example -- 
+/// ```
+/// function doSomeStuff () {
+///      let greeting = if (a == b) {
+///          return 'Hello world';
+///      }
+///      else {
+///          return 'Goodbye world';
+///      }
+/// }
+/// ```
+/// The above fjs code shouls set the result of either branch of the if statement to "greeting", BUT:
+///
+/// ```
+/// function doSomeStuff () {
+///     if (a == b) {
+///         return 'Hello world';
+///     }
+///     else {
+///         return 'Goodbye world';
+///     }
+/// }
+/// ```
+/// The above js code should return from the function doSomeStuff  with the result of the if statement
+///
+/// So, all fjs elements must come before or after an expression token like the '=' in let greeting = ...
+///
+#[derive(PartialEq, Eq)]
+pub enum TokenExpressionType {
+    Expression,
+    OnlyBeforeExp,
+    OnlyAfterExp,
+    None
+}
+
+pub fn get_token_expression_type (token: &TokenOfInterest) -> TokenExpressionType {
+    match token {
+
+        // Valid before or after an expression
+        TokenOfInterest::BitAnd                 |
+        TokenOfInterest::BitOr                  |
+        TokenOfInterest::BitXor                 |
+        TokenOfInterest::BitNot                 |
+        TokenOfInterest::CloseBrack             |
+        TokenOfInterest::Assign                 |
+        TokenOfInterest::Add                    |
+        TokenOfInterest::Sub                    |
+        TokenOfInterest::Mul                    |
+        TokenOfInterest::Div                    |
+        TokenOfInterest::Mod                    |
+        TokenOfInterest::OpenParen              |
+        TokenOfInterest::OpenBrack              |
+        TokenOfInterest::CloseParen             |
+        TokenOfInterest::Colon                  |
+        TokenOfInterest::Comma                  |
+        TokenOfInterest::BitAndEq               | 
+        TokenOfInterest::LogAnd                 | 
+        TokenOfInterest::BitOrEq                | 
+        TokenOfInterest::LogOr                  | 
+        TokenOfInterest::BitXorEq               | 
+        TokenOfInterest::BitNotEq               | 
+        TokenOfInterest::WeakEq                 | 
+        TokenOfInterest::ArrowFunction          | 
+        TokenOfInterest::NotEq                  | 
+        TokenOfInterest::Gt                     | 
+        TokenOfInterest::Ge                     | 
+        TokenOfInterest::ShR                    | 
+        TokenOfInterest::Lt                     | 
+        TokenOfInterest::Le                     | 
+        TokenOfInterest::ShL                    | 
+        TokenOfInterest::AddEq                  | 
+        TokenOfInterest::SubEq                  | 
+        TokenOfInterest::MulEq                  | 
+        TokenOfInterest::DivEq                  | 
+        TokenOfInterest::ModEq                  | 
+        TokenOfInterest::In                     | 
+        TokenOfInterest::Of                     | 
+        TokenOfInterest::If                     | 
+        TokenOfInterest::Inc                    | 
+        TokenOfInterest::Dec                    |
+        TokenOfInterest::StrictEq               |
+        TokenOfInterest::ShREq                  |
+        TokenOfInterest::StrictNotEq            |
+        TokenOfInterest::ShRZeroFill            |
+        TokenOfInterest::ShLEq                  |
+        TokenOfInterest::Typeof                 |
+        TokenOfInterest::ShRZeroFillEq          => TokenExpressionType::Expression,
+        
+        // Only after
+        TokenOfInterest::CloseCurly             |
+        TokenOfInterest::Dot                    => TokenExpressionType::OnlyAfterExp,
+        
+        // Only before
+        TokenOfInterest::Delete                 |
+        TokenOfInterest::Not                    |
+        TokenOfInterest::Return                 |
+        TokenOfInterest::New                    => TokenExpressionType::OnlyBeforeExp,
+        
+        // None
+        TokenOfInterest::OpenCurly              |
+        TokenOfInterest::Semicolon              |
+        TokenOfInterest::StringSingle           |
+        TokenOfInterest::StringDouble           | 
+        TokenOfInterest::StringBackTick         |
+        TokenOfInterest::SingleLineCommentClose |
+        TokenOfInterest::SingleLineCommentOpen  |
+        TokenOfInterest::MultiLineCommentOpen   |
+        TokenOfInterest::MultiLineCommentClose  |
+        TokenOfInterest::Case                   |
+        TokenOfInterest::Break                  |
+        TokenOfInterest::Else                   |
+        TokenOfInterest::Default                |
+        TokenOfInterest::Switch                 |
+        TokenOfInterest::Instanceof             |
+        TokenOfInterest::EOF                    |
+        TokenOfInterest::BOF                    |
+        TokenOfInterest::None                   => TokenExpressionType::None,
+    }
 }
 
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 #[allow(dead_code)]
-pub enum TokensOfInterest {
+pub enum TokenOfInterest {
 
     // Beginning with '&', '|', '^',
     BitAnd,  BitAndEq,   LogAnd,  
@@ -293,7 +422,7 @@ pub fn initialize_lookup () -> TokenLookup {
             Step {
                 // Tokens beginning with '&' 
                 next: '&',
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::BitAnd },
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::BitAnd },
                 step: Some (
                     TokenLookup {
                         lookup: vec![
@@ -301,13 +430,13 @@ pub fn initialize_lookup () -> TokenLookup {
                             Step {
                                 next: '&',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::LogAnd }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::LogAnd }
                             },
                             // '&='
                             Step {
                                 next: '=',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::BitAndEq }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::BitAndEq }
                             }
                         ]
                     }
@@ -317,7 +446,7 @@ pub fn initialize_lookup () -> TokenLookup {
             Step {
                 next: '|',
                 // '|'
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::BitOr },
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::BitOr },
                 step: Some (
                     TokenLookup {
                         lookup: vec![
@@ -325,13 +454,13 @@ pub fn initialize_lookup () -> TokenLookup {
                             Step {
                                 next: '|',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::LogOr }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::LogOr }
                             },
                             // '|='
                             Step {
                                 next: '=',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::BitOrEq }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::BitOrEq }
                             }
                         ]
                     }
@@ -341,7 +470,7 @@ pub fn initialize_lookup () -> TokenLookup {
             Step {
                 next: '^',
                 // '^'
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::BitXor },
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::BitXor },
                 step: Some (
                     TokenLookup {
                         lookup: vec![
@@ -349,7 +478,7 @@ pub fn initialize_lookup () -> TokenLookup {
                             Step {
                                 next: '=',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::BitXorEq }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::BitXorEq }
                             }
                         ]
                     }
@@ -359,7 +488,7 @@ pub fn initialize_lookup () -> TokenLookup {
             Step {
                 next: '~',
                 // '~'
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::BitNot },
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::BitNot },
                 step: Some (
                     TokenLookup {
                         lookup: vec![
@@ -367,7 +496,7 @@ pub fn initialize_lookup () -> TokenLookup {
                             Step {
                                 next: '=',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::BitNotEq }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::BitNotEq }
                             }
                         ]
                     }
@@ -377,7 +506,7 @@ pub fn initialize_lookup () -> TokenLookup {
             Step {
                 next: '=',
                 // '='
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::Assign },
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::Assign },
                 step: Some (
                     TokenLookup {
                         lookup: vec![
@@ -385,12 +514,12 @@ pub fn initialize_lookup () -> TokenLookup {
                             Step {
                                 next: '>',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::ArrowFunction }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::ArrowFunction }
                             },
                             Step {
                                 next: '=',
                                 // '=='
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::WeakEq },
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::WeakEq },
                                 step: Some (
                                     TokenLookup {
                                         lookup: vec![
@@ -399,7 +528,7 @@ pub fn initialize_lookup () -> TokenLookup {
                                                 
                                                 next: '=',
                                                 step: None,
-                                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::StrictEq }
+                                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::StrictEq }
                                             },
                                         ]
                                     }
@@ -413,14 +542,14 @@ pub fn initialize_lookup () -> TokenLookup {
             Step {
                 next: '!',
                 // '!'
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::Not },
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::Not },
                 step: Some (
                     TokenLookup {
                         lookup: vec![
                             Step {
                                 next: '=',
                                 // '!='
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::NotEq },
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::NotEq },
                                 step: Some (
                                     TokenLookup {
                                         lookup: vec![
@@ -429,7 +558,7 @@ pub fn initialize_lookup () -> TokenLookup {
                                                 
                                                 next: '=',
                                                 step: None,
-                                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::StrictNotEq }
+                                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::StrictNotEq }
                                             },
                                         ]
                                     }
@@ -443,7 +572,7 @@ pub fn initialize_lookup () -> TokenLookup {
             Step {
                 next: '<',
                 // '<'
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::Lt },
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::Lt },
                 step: Some (
                     TokenLookup {
                         lookup: vec![
@@ -451,12 +580,12 @@ pub fn initialize_lookup () -> TokenLookup {
                             Step {
                                 next: '=',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::Le }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::Le }
                             },
                             Step {
                                 next: '<',
                                 // '<<'
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::ShL },
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::ShL },
                                 step: Some (
                                     TokenLookup {
                                         lookup: vec![
@@ -464,7 +593,7 @@ pub fn initialize_lookup () -> TokenLookup {
                                             Step {
                                                 next: '=',
                                                 step: None,
-                                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::ShLEq }
+                                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::ShLEq }
                                             },
                                         ]
                                     }
@@ -478,7 +607,7 @@ pub fn initialize_lookup () -> TokenLookup {
             Step {
                 next: '>',
                 // '>'
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::Gt },
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::Gt },
                 step: Some (
                     TokenLookup {
                         lookup: vec![
@@ -486,12 +615,12 @@ pub fn initialize_lookup () -> TokenLookup {
                             Step {
                                 next: '=',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::Ge }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::Ge }
                             },
                             Step {
                                 next: '>',
                                 // '>>'
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::ShR },
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::ShR },
                                 step: Some (
                                     TokenLookup {
                                         lookup: vec![
@@ -500,12 +629,12 @@ pub fn initialize_lookup () -> TokenLookup {
                                                 
                                                 next: '=',
                                                 step: None,
-                                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::ShREq }
+                                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::ShREq }
                                             },
                                             Step {
                                                 next: '>',
                                                 // '>>>'
-                                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::ShRZeroFill },
+                                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::ShRZeroFill },
                                                 step: Some (
                                                     TokenLookup {
                                                         lookup: vec![
@@ -513,7 +642,7 @@ pub fn initialize_lookup () -> TokenLookup {
                                                             Step {
                                                                 next: '=',
                                                                 step: None,
-                                                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::ShRZeroFillEq }
+                                                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::ShRZeroFillEq }
                                                             },
                                                         ]
                                                     }
@@ -531,7 +660,7 @@ pub fn initialize_lookup () -> TokenLookup {
             Step {
                 next: '+',
                 // '+'
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::Add },
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::Add },
                 step: Some (
                     TokenLookup {
                         lookup: vec![
@@ -539,13 +668,13 @@ pub fn initialize_lookup () -> TokenLookup {
                             Step {
                                 next: '+',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::Inc }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::Inc }
                             },
                             // '+='
                             Step {
                                 next: '=',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::AddEq }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::AddEq }
                             },
                         ]
                     }
@@ -555,7 +684,7 @@ pub fn initialize_lookup () -> TokenLookup {
             Step {
                 next: '-',
                 // '-'
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::Sub },
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::Sub },
                 step: Some (
                     TokenLookup {
                         lookup: vec![
@@ -563,13 +692,13 @@ pub fn initialize_lookup () -> TokenLookup {
                             Step {
                                 next: '-',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::Dec }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::Dec }
                             },
                             // '-='
                             Step {
                                 next: '=',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::SubEq }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::SubEq }
                             },
                         ]
                     }
@@ -579,7 +708,7 @@ pub fn initialize_lookup () -> TokenLookup {
             Step {
                 next: '*',
                 // '*'
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::Mul },
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::Mul },
                 step: Some (
                     TokenLookup {
                         lookup: vec![
@@ -587,13 +716,13 @@ pub fn initialize_lookup () -> TokenLookup {
                             Step {
                                 next: '=',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::MulEq }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::MulEq }
                             },
                             // '*/'
                             Step {
                                 next: '/',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::MultiLineCommentClose }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::MultiLineCommentClose }
                             },
                         ]
                     }
@@ -603,7 +732,7 @@ pub fn initialize_lookup () -> TokenLookup {
             Step {
                 next: '/',
                 // '/'
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::Div },
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::Div },
                 step: Some (
                     TokenLookup {
                         lookup: vec![
@@ -611,19 +740,19 @@ pub fn initialize_lookup () -> TokenLookup {
                             Step {
                                 next: '=',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::DivEq }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::DivEq }
                             },
                             // '/*'
                             Step {
                                 next: '*',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::MultiLineCommentOpen }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::MultiLineCommentOpen }
                             },
                             // '//'
                             Step {
                                 next: '/',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::SingleLineCommentOpen }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::SingleLineCommentOpen }
                             },
                         ]
                     }
@@ -633,7 +762,7 @@ pub fn initialize_lookup () -> TokenLookup {
             Step {
                 next: '%',
                 // '%'
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::Mod },
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::Mod },
                 step: Some (
                     TokenLookup {
                         lookup: vec![
@@ -641,7 +770,7 @@ pub fn initialize_lookup () -> TokenLookup {
                             Step {
                                                                 next: '=',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::ModEq }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::ModEq }
                             },
                         ]
                     }
@@ -651,85 +780,85 @@ pub fn initialize_lookup () -> TokenLookup {
             Step {
                 next: ';',
                 step: None,
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::Semicolon }
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::Semicolon }
             },
             // Tokens beginning with '('
             Step {
                 next: '(',
                 step: None,
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::OpenParen }
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::OpenParen }
             },
             // Tokens beginning with '['
             Step {
                 next: '[',
                 step: None,
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::OpenBrack }
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::OpenBrack }
             },
             // Tokens beginning with ']'
             Step {
                 next: ')',
                 step: None,
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::CloseParen }
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::CloseParen }
             },
             // Tokens beginning with ')'
             Step {
                 next: ']',
                 step: None,
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::CloseBrack }
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::CloseBrack }
             },
             // Tokens beginning with '{'
             Step {
                 next: '{',
                 step: None,
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::OpenCurly }
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::OpenCurly }
             },
             // Tokens beginning with '}'
             Step {
                 next: '}',
                 step: None,
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::CloseCurly }
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::CloseCurly }
             },
             // Tokens beginning with ','
             Step {
                 next: ',',
                 step: None,
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::Comma }
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::Comma }
             },
             // Tokens beginning with ':'
             Step {
                 next: ':',
                 step: None,
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::Colon }
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::Colon }
             },
             // Tokens beginning with '.'
             Step {
                 next: '.',
                 step: None,
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::Dot }
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::Dot }
             },
             // Tokens beginning with '\n'
             Step {
                 next: '\n',
                 step: None,
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::SingleLineCommentClose }
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::SingleLineCommentClose }
             },
             // Tokens beginning with '''
             Step {
                 next: '\'',
                 step: None,
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::StringSingle }
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::StringSingle }
             },
             // Tokens beginning with '"'
             Step {
                 next: '"',
                 step: None,
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::StringDouble }
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::StringDouble }
             },
             // Tokens beginning with '`'
             Step {
                 next: '`',
                 step: None,
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::StringBackTick }
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::StringBackTick }
             },
             
             // Tokens beginning with 'in'
@@ -742,7 +871,7 @@ pub fn initialize_lookup () -> TokenLookup {
                             Step {
                                 next: 'n',
                                 // 'in'
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::In },
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::In },
                                 
                                 step: Some (
                                     TokenLookup {
@@ -751,7 +880,7 @@ pub fn initialize_lookup () -> TokenLookup {
                                             Step {
                                                 next: 's',
                                                 step: None,
-                                                end: End { RDLP: Regex::new("^tanceof([^\\d\\w].*|$)").unwrap(), token: TokensOfInterest::Instanceof  }
+                                                end: End { RDLP: Regex::new("^tanceof([^\\d\\w].*|$)").unwrap(), token: TokenOfInterest::Instanceof  }
                                             }
                                         ]
                                     }
@@ -760,68 +889,68 @@ pub fn initialize_lookup () -> TokenLookup {
                             Step {
                                 next: 'f',
                                 step: None,
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::If }
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::If }
                             },
                         ]
                     }
                 ),
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::None }
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::None }
             },
 
             // Tokens beginning with 'e'
             Step {
                 next: 'e',
                 step: None,
-                end: End { RDLP: Regex::new("^lse([^\\d\\w].*|$)").unwrap(), token: TokensOfInterest::Else }
+                end: End { RDLP: Regex::new("^lse([^\\d\\w].*|$)").unwrap(), token: TokenOfInterest::Else }
             },
 
             // Tokens beginning with 'c'
             Step {
                 next: 'c',
                 step: None,
-                end: End { RDLP: Regex::new("^ase([^\\d\\w].*|$)").unwrap(), token: TokensOfInterest::Case }
+                end: End { RDLP: Regex::new("^ase([^\\d\\w].*|$)").unwrap(), token: TokenOfInterest::Case }
             },
             
             // Tokens beginning with 'b'
             Step {
                 next: 'b',
                 step: None,
-                end: End { RDLP: Regex::new("^reak([^\\d\\w].*|$)").unwrap(), token: TokensOfInterest::Break }
+                end: End { RDLP: Regex::new("^reak([^\\d\\w].*|$)").unwrap(), token: TokenOfInterest::Break }
             },
 
             // Tokens beginning with 'c'
             Step {
                 next: 'r',
                 step: None,
-                end: End { RDLP: Regex::new("^eturn([^\\d\\w].*|$)").unwrap(), token: TokensOfInterest::Return }
+                end: End { RDLP: Regex::new("^eturn([^\\d\\w].*|$)").unwrap(), token: TokenOfInterest::Return }
             },
 
             // Tokens beginning with 'o'
             Step {
                 next: 'o',
                 step: None,
-                end: End { RDLP: Regex::new("^f([^\\d\\w].*|$)").unwrap(), token: TokensOfInterest::Of }
+                end: End { RDLP: Regex::new("^f([^\\d\\w].*|$)").unwrap(), token: TokenOfInterest::Of }
             },
 
             // Tokens beginning with 't'
             Step {
                 next: 't',
                 step: None,
-                end: End { RDLP: Regex::new("^ypeof([^\\d\\w].*|$)").unwrap(), token: TokensOfInterest::Typeof }
+                end: End { RDLP: Regex::new("^ypeof([^\\d\\w].*|$)").unwrap(), token: TokenOfInterest::Typeof }
             },
 
             // Tokens beginning with 's'
             Step {
                 next: 's',
                 step: None,
-                end: End { RDLP: Regex::new("^witch([^\\d\\w].*|$)").unwrap(), token: TokensOfInterest::Switch }
+                end: End { RDLP: Regex::new("^witch([^\\d\\w].*|$)").unwrap(), token: TokenOfInterest::Switch }
             },
 
             // // Tokens beginning with 'd'
             // Step {
             //     next: 'd',
             //     step: None,
-            //     end: End { RDLP: Regex::new("^elete([^\\d\\w].*|$)").unwrap(), token: TokensOfInterest::Delete }
+            //     end: End { RDLP: Regex::new("^elete([^\\d\\w].*|$)").unwrap(), token: TokenOfInterest::Delete }
             // },
 
             Step {
@@ -831,7 +960,7 @@ pub fn initialize_lookup () -> TokenLookup {
                         lookup: vec![
                             Step {
                                 next: 'e',
-                                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::None },
+                                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::None },
                                 
                                 step: Some (
                                     TokenLookup {
@@ -840,13 +969,13 @@ pub fn initialize_lookup () -> TokenLookup {
                                             Step {
                                                 next: 'l',
                                                 step: None,
-                                                end: End { RDLP: Regex::new("^ete([^\\d\\w].*|$)").unwrap(), token: TokensOfInterest::Delete  }
+                                                end: End { RDLP: Regex::new("^ete([^\\d\\w].*|$)").unwrap(), token: TokenOfInterest::Delete  }
                                             },
                                             // 'default'
                                             Step {
                                                 next: 'f',
                                                 step: None,
-                                                end: End { RDLP: Regex::new("^ault([^\\d\\w].*|$)").unwrap(), token: TokensOfInterest::Default  }
+                                                end: End { RDLP: Regex::new("^ault([^\\d\\w].*|$)").unwrap(), token: TokenOfInterest::Default  }
                                             }
                                         ]
                                     }
@@ -855,7 +984,7 @@ pub fn initialize_lookup () -> TokenLookup {
                         ]
                     }
                 ),
-                end: End { RDLP: def_regex.clone(), token: TokensOfInterest::None }
+                end: End { RDLP: def_regex.clone(), token: TokenOfInterest::None }
             },
 
 
@@ -863,7 +992,7 @@ pub fn initialize_lookup () -> TokenLookup {
             Step {
                 next: 'n',
                 step: None,
-                end: End { RDLP: Regex::new("^ew([^\\d\\w].*|$)").unwrap(), token: TokensOfInterest::New }
+                end: End { RDLP: Regex::new("^ew([^\\d\\w].*|$)").unwrap(), token: TokenOfInterest::New }
             },
         ]
     }

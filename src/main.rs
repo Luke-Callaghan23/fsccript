@@ -1,17 +1,20 @@
 use std::env;
 
 mod parser;
-use parser::parser::parser::parse_files;
-use parser::types::{
-    CompilationTarget,
-    FileContent
-};
+
+// use crate::parser::types::*;
+use crate::parser::parser::parser::parse_files;
 
 mod io;
 use io::read_files::PathAndContents;
 use io::read_files::process_files;
 use io::write_files::write_all;
 
+mod types;
+use types::types::*;
+
+mod type_implementations;
+use type_implementations::type_implementations::*;
 
 /// # External crates for fscript -- 
 extern crate itertools;
@@ -27,7 +30,7 @@ use transpiler::types::{
 mod tokenizer;
 use tokenizer::tokenizer::tokenize_targets;
 use tokenizer::token_types::initialize_lookup;
-use tokenizer::token_stream::TokenStream;
+use tokenizer::types::TokenStream;
 
 
 #[allow(unused_parens)]
@@ -69,6 +72,11 @@ fn main () {
         }
 
     }).collect();
+
+
+    // for target in &targets {
+    //     println!("{}", target);
+    // }
 
 
 

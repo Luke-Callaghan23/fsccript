@@ -1,12 +1,21 @@
 use std::str;
-use crate::{parser::types::{CompilationTarget, FileContent, TokenizedFile}, tokenizer::token_types::*};
-use super::token_stream::{Token, TokenStream, TokenOrStream};
+use crate::{tokenizer::token_types::*};
+use super::types::{
+    Token, 
+    TokenStream, 
+    TokenOrStream
+};
 
+use crate::types::types::{
+    CompilationTarget, 
+    FileContent, 
+    TokenizedFile
+};
 
 
 /// # lookup_token
 /// 
-/// Token lookup function that returns the starting TokensOfInterest of an input byte string
+/// Token lookup function that returns the starting TokenOfInterest of an input byte string
 ///
 /// # Parameters -- 
 /// 
@@ -15,7 +24,7 @@ use super::token_stream::{Token, TokenStream, TokenOrStream};
 ///         ./src/tokenizer/token_type_lookup returned by initialize_lookup
 ///
 /// # Returns -- 
-/// * `TokensOfInterest` -- the beginning token of the `token` byte string
+/// * `TokenOfInterest` -- the beginning token of the `token` byte string
 ///
 ///
 /// ## Examples -- 
@@ -23,20 +32,20 @@ use super::token_stream::{Token, TokenStream, TokenOrStream};
 ///     let lookup_table = initialize_lookup();
 ///
 ///     let string: &str = ">>>";
-///     let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokensOfInterest::None);
-///     assert_eq!(res, TokensOfInterest::ShRZeroFill);
+///     let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokenOfInterest::None);
+///     assert_eq!(res, TokenOfInterest::ShRZeroFill);
 /// 
 ///     let string: &str = ">>>=";
-///     let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokensOfInterest::None);
-///     assert_eq!(res, TokensOfInterest::ShRZeroFillEq);
+///     let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokenOfInterest::None);
+///     assert_eq!(res, TokenOfInterest::ShRZeroFillEq);
 ///
 ///     let string: &str = "instanceof";
-///     let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokensOfInterest::None);
-///     assert_eq!(res, TokensOfInterest::Instanceof);
+///     let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokenOfInterest::None);
+///     assert_eq!(res, TokenOfInterest::Instanceof);
 ///
 ///     let string: &str = "a&";
-///     let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokensOfInterest::None);
-///     assert_eq!(res, TokensOfInterest::None);
+///     let res = tokenizer::lookup_token(string.as_bytes(), &lookup_table, TokenOfInterest::None);
+///     assert_eq!(res, TokenOfInterest::None);
 ///
 /// ```
 ///
@@ -44,9 +53,9 @@ use super::token_stream::{Token, TokenStream, TokenOrStream};
 pub(crate) fn lookup_token (
     token: &[u8], 
     lookup_table: &TokenLookup, 
-    last_token: TokensOfInterest, 
-) -> TokensOfInterest {
-    println!("{:?}", token);
+    last_token: TokenOfInterest, 
+) -> TokenOfInterest {
+    // println!("{:?}", token);
     for char_step in &lookup_table.lookup {
         
 
@@ -79,7 +88,7 @@ pub(crate) fn lookup_token (
                 }
                 else {
                     // If it does not match, set last_token to None
-                    TokensOfInterest::None
+                    TokenOfInterest::None
                 };
             
             match &char_step.step {
@@ -114,9 +123,9 @@ pub(crate) fn lookup_token (
 ///
 /// ## Parameters -- 
 /// * `data: &'a [u8]` -- byte string to tokenize
-/// * `token_start: &[char; 30]` -- array of characters that denote the start of all non-string TokensOfInterest
+/// * `token_start: &[char; 30]` -- array of characters that denote the start of all non-string TokenOfInterest
 /// * `start_index: usize` -- starting index to tokenize the stream
-/// * `lookup_table: &TokenLookup` -- lookup table for all TokensOfInterest
+/// * `lookup_table: &TokenLookup` -- lookup table for all TokenOfInterest
 ///
 /// ## Returns --
 /// * `Option<Token>` -- The next Token in the byte string, or None if the end of the bytestring has been reached
@@ -149,16 +158,16 @@ fn find_next_token (
     if index >= data.len() { None }
     else {
 
-        // Do a lookup for a TokensOfInterest enum in the data array
+        // Do a lookup for a TokenOfInterest enum in the data array
         //      starting at index
         let next = lookup_token (
             &data[index..], 
             lookup_table, 
-            TokensOfInterest::None
+            TokenOfInterest::None
         );
 
         match next {
-            TokensOfInterest::None => {
+            TokenOfInterest::None => {
 
                 // If the token we found was not an interesting token ( :( ), search for the end 
                 //      of the non-interesting token by advancing the index of the byte-string
@@ -173,7 +182,7 @@ fn find_next_token (
                     Token {
                         start: start,
                         end: index,
-                        token: TokensOfInterest::None,
+                        token: TokenOfInterest::None,
                     }
                 )
             },
@@ -201,19 +210,20 @@ fn find_next_token (
 /// ## Parameters -- 
 /// * `data: &'a [u8]` -- byte string to tokenize
 /// * `start_index: usize` -- starting index to tokenize the stream
-/// * `lookup_table: &TokenLookup` -- lookup table for all TokensOfInterest
-/// * `end_token: TokensOfInterest` -- the ending token of this stream
+/// * `lookup_table: &TokenLookup` -- lookup table for all TokenOfInterest
+/// * `end_token: TokenOfInterest` -- the ending token of this stream
 /// * `mut stream: TokenStream<'a>` -- the TokenStream that this function will fill in 
 ///
 /// ## Returns --
 /// * `TokenStream<'a>` -- parameter `mut stream: TokenStream<'a>` stream with commend / stream
 ///     tokens added
 /// .
+#[allow(non_snake_case)]
 fn tokenize_comment_or_String <'a> (
     data: &'a [u8], 
     start_index: usize, 
     lookup_table: &TokenLookup,
-    end_token: TokensOfInterest, 
+    end_token: TokenOfInterest, 
     mut stream: TokenStream<'a>
 ) -> TokenStream<'a> {
 
@@ -223,7 +233,7 @@ fn tokenize_comment_or_String <'a> (
     while index < data.len() {
 
         // Get the next token at the current index
-        let next = lookup_token(&data[index..], lookup_table, TokensOfInterest::None);
+        let next = lookup_token(&data[index..], lookup_table, TokenOfInterest::None);
 
         if next == end_token {
 
@@ -233,7 +243,7 @@ fn tokenize_comment_or_String <'a> (
                     Token {
                         start: start,
                         end: index,
-                        token: TokensOfInterest::None,
+                        token: TokenOfInterest::None,
                     }
                 )
             );
@@ -263,7 +273,7 @@ fn tokenize_comment_or_String <'a> (
             Token {
                 start: start,
                 end: data.len(),
-                token: TokensOfInterest::None
+                token: TokenOfInterest::None
             }
         )
     );
@@ -274,7 +284,7 @@ fn tokenize_comment_or_String <'a> (
             Token {
                 start: data.len(),
                 end: data.len(),
-                token: TokensOfInterest::EOF
+                token: TokenOfInterest::EOF
             }
         )
     );
@@ -286,33 +296,33 @@ fn tokenize_comment_or_String <'a> (
 
 /// # tokenizer::tokenize_stream
 ///
-/// Function to tokenize an enclosing stream of TokensOfInterest enums, starting from a given Token, start_token
-///     and ending at an ending TokensOfInterest, end_token.
+/// Function to tokenize an enclosing stream of TokenOfInterest enums, starting from a given Token, start_token
+///     and ending at an ending TokenOfInterest, end_token.
 /// 
 /// If no ending token is found in the byte string, then the stream will be finished by an EOF Token
 ///
 /// ## Parameters -- 
 /// * `data: &'a [u8]` -- byte string to tokenize
 /// * `start_index: usize` -- starting index to tokenize the stream
-/// * `token_start: &[char; 30]` -- array of characters that denote the start of all non-string TokensOfInterest
-/// * `lookup_table: &TokenLookup` -- lookup table for all TokensOfInterest
+/// * `token_start: &[char; 30]` -- array of characters that denote the start of all non-string TokenOfInterest
+/// * `lookup_table: &TokenLookup` -- lookup table for all TokenOfInterest
 /// * `depth: usize` -- the count of all TokenStreams that are parent to this one
 /// * `start_token: Token` -- starting token of the stream to tokenize
-/// * `end_token: TokensOfInterest` -- the ending token of this stream
+/// * `end_token: TokenOfInterest` -- the ending token of this stream
 ///
 /// ## Returns --
-/// * `TokenStream<'a>` -- a token stream of all TokensOfInterest in this stream, between the 
+/// * `TokenStream<'a>` -- a token stream of all TokenOfInterest in this stream, between the 
 ///     start_token that was anready found, and the end_token that this function is searching for
 /// .
 fn tokenize_stream <'a> (
     data:         &'a [u8], 
     start_index:  usize, 
     token_start:  &[char; 30], 
-    stream_start: &[TokensOfInterest; 8],
+    stream_start: &[TokenOfInterest; 8],
     lookup_table: &TokenLookup,
     depth:        usize,
     start_token:  Token,
-    end_token:    TokensOfInterest,
+    end_token:    TokenOfInterest,
 ) -> TokenStream<'a> {
     
     let is_comment_or_string = token_is_comment_or_string(&start_token.token);
@@ -358,10 +368,10 @@ fn tokenize_stream <'a> (
                                 )
                             )
                         );
-                        println!("{}", index);
+                        // println!("{}", index);
                     }
                     else {
-                        println!("{:?}", token);
+                        // println!("{:?}", token);
                         // Add the new token to the current token stream
                         index = stream.add_token (TokenOrStream::Token ( token ));
                         if token_type  == end_token {
@@ -378,13 +388,13 @@ fn tokenize_stream <'a> (
                     stream.add_token (
                         TokenOrStream::Token (
                             Token {
-                                token: TokensOfInterest::EOF,
+                                token: TokenOfInterest::EOF,
                                 start: index,
                                 end: data.len()
                             }
                         )
                     );
-                    if end_token == TokensOfInterest::EOF && depth == 0 {
+                    if end_token == TokenOfInterest::EOF && depth == 0 {
                         break;
                     }
                     else {
@@ -400,15 +410,15 @@ fn tokenize_stream <'a> (
 
 /// # tokenizer::tokenize
 ///
-/// Function to tokenize a byte string into a stream of TokensOfInterest and sub-streams
+/// Function to tokenize a byte string into a stream of TokenOfInterest and sub-streams
 ///         of Tokens for enclosing scopes
 ///
 /// ## Parameters -- 
 /// * `data: &'a [u8]` -- byte string to tokenize
-/// * `lookup_table: &TokenLookup` -- lookup table for all TokensOfInterest
+/// * `lookup_table: &TokenLookup` -- lookup table for all TokenOfInterest
 ///
 /// ## Returns --
-/// * `TokenStream<'a>` -- a token stream of all TokensOfInterest in the input data array,
+/// * `TokenStream<'a>` -- a token stream of all TokenOfInterest in the input data array,
 ///     starting at the beginning of the stream
 ///
 /// ## Examples -- 
@@ -551,11 +561,11 @@ pub fn tokenize <'a> (data: &'a [u8], lookup_table: &TokenLookup) -> TokenStream
 
     // Array of all the tokens that should begin a sub-stream inside of a token stream
     let stream_start = [
-        TokensOfInterest::OpenCurly,             TokensOfInterest::OpenParen,             TokensOfInterest::OpenBrack, 
-        TokensOfInterest::StringSingle,          TokensOfInterest::StringDouble,          TokensOfInterest::StringBackTick,
-        TokensOfInterest::SingleLineCommentOpen, TokensOfInterest::MultiLineCommentOpen,  
-        // TokensOfInterest::Case,
-        // TokensOfInterest::Default, 
+        TokenOfInterest::OpenCurly,             TokenOfInterest::OpenParen,             TokenOfInterest::OpenBrack, 
+        TokenOfInterest::StringSingle,          TokenOfInterest::StringDouble,          TokenOfInterest::StringBackTick,
+        TokenOfInterest::SingleLineCommentOpen, TokenOfInterest::MultiLineCommentOpen,  
+        // TokenOfInterest::Case,
+        // TokenOfInterest::Default, 
     ];
 
     // Call tokenize stream with base variables, and returns resulting stream
@@ -569,9 +579,9 @@ pub fn tokenize <'a> (data: &'a [u8], lookup_table: &TokenLookup) -> TokenStream
         Token {                         // Starting token is BOF (beginning of file), start=0, end=0
             start:0,
             end:0,
-            token: TokensOfInterest::BOF,
+            token: TokenOfInterest::BOF,
         },
-        TokensOfInterest::EOF             // ending token is EOF (end of file)
+        TokenOfInterest::EOF             // ending token is EOF (end of file)
     )
 }
 

@@ -7,8 +7,9 @@ pub struct TokenStream <'a> {
     depth:        usize,
     start:        usize,
     end:          usize,
+    at_start:     bool,
     // delimiters:   (&'a Token, Option<&'a Token>),
-    // outer:        Option<&'a TokenStream <'a>>
+    // pub outer:        Option<&'a TokenStream <'a>>
 }
 
 
@@ -24,11 +25,11 @@ pub enum TokenOrStream <'a> {
     TokenStream ( TokenStream <'a> )
 }
 
-use crate::tokenizer::token_types::TokensOfInterest;
+use crate::tokenizer::token_types::TokenOfInterest;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Token {
-    pub token: TokensOfInterest,
+    pub token: TokenOfInterest,
     pub start: usize,
     pub end: usize,
 }
@@ -87,7 +88,7 @@ impl <'a> TokenStream <'a> {
             start:        token.start,
             // delimiters:   (&token, None),
             end:          0,
-            // outer:        None
+            at_start:     true,
         };
         stream.add_token(TokenOrStream::Token( token ));
         stream
@@ -110,7 +111,7 @@ impl <'a> TokenStream <'a> {
                     TokenOrStream::TokenStream( token_stream ) => token_stream.end,
                 };
                 
-                // if let TokenOrStream::TokenStream( ref mut tok  ) = token {
+                // if let TokenOrStream::TokenStream( ref mut tok  ) = &'atoken {
                 //     tok.outer = Some( &self );
                 // }
 
@@ -174,6 +175,7 @@ impl <'a> TokenStream <'a> {
             depth:        self.depth,
             start:        self.start,
             end:          self.end,
+            at_start:     true,
             // delimiters:   self.delimiters.clone(),
             // outer:        self.outer,
         })
@@ -205,26 +207,6 @@ impl <'a> TokenStream <'a> {
         }
         else { None }
     }
-    
-    /*
-    /// # TokenStream::step_out -- 
-    ///
-    /// Function to step out of the current enclosing token scope to the outer
-    ///        scope, if one exists
-    ///
-    /// This is analagous to stepping from an enclosing scope, like {}, (), []
-    ///         '', "", ``, //\n, or /**/ and into the outer scope
-    ///
-    /// Returns None if:
-    ///    *    The current TokenStream has no outer scope
-    ///
-    /// ## Returns -- 
-    /// * `Option<&TokenStream <'a>>` -- The stream that we stepped out into, or None if
-    ///     there was no Stream to step out into
-    ///
-    // pub fn step_out (&'a self) -> Option<&TokenStream <'a>> { self.outer }
-     */
-
     
     /// # TokenStream::first -- 
     ///
@@ -263,6 +245,10 @@ impl <'a> TokenStream <'a> {
         else { None }    
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.stream_index  == self.stream_len
+    }
+
 
     /// # TokenStream::current -- 
     ///
@@ -291,24 +277,35 @@ impl <'a> TokenStream <'a> {
     /// *`Option<&TokenOrStream <'a>>` -- the next Token / Stream in self's
     ///     token stream, or None if there are no more
     ///
-    pub fn next (&'a mut self) -> Option<&TokenOrStream<'a>> {
+    pub fn next (&mut self) -> Option<&TokenOrStream<'a>> {
         if self.stream_index < self.stream_len {
 
-            let stream = TokenStream::stream_as_slice(&self.stream, self.stream_len);
-
-            // Getting the byte-length of the current token
-            let token_bytes = match &stream[ self.stream_index ] {
-                TokenOrStream::Token ( token ) => {
-                    token.end - token.start
-                }
-                TokenOrStream::TokenStream ( token_stream ) => {
-                    token_stream.end - token_stream.start
-                }
+            let stream = match &self.stream {
+                Stream::Stream( stream ) => { &stream[0..self.stream_len] },
+                Stream::RefStream( stream ) => { stream }
             };
+
             
-            // Incrmenet byte count and index
-            self.byte_count += token_bytes;
-            self.stream_index += 1;
+            
+            if !self.at_start {
+                // Getting the byte-length of the current token
+                let token_bytes = match &stream[ self.stream_index ] {
+                    TokenOrStream::Token ( token ) => {
+                        token.end - token.start
+                    }
+                    TokenOrStream::TokenStream ( token_stream ) => {
+                        token_stream.end - token_stream.start
+                    }
+                };
+                // Incrmenet byte count and stream index, if not at the start of the stream
+                self.byte_count += token_bytes;
+                self.stream_index += 1;
+            }
+            else {
+                // .next() should return the first element if .next() has never been called
+                //      before, so a .at_start bool is being used as a hacky workaround :)
+                self.at_start = false;
+            }
             
             // Return the next item in the stream, if the end of the stream
             //      has not been reached
@@ -361,5 +358,28 @@ impl <'a> TokenStream <'a> {
         else { None }    
     }
     
+
+    pub fn peek_prev (&'a mut self) -> Option<&TokenOrStream<'a>> {
+        if self.stream_index < self.stream_len {
+            if self.stream_index > 0 {
+                
+                let stream = match &self.stream {
+                    Stream::Stream( stream ) => { &stream[0..self.stream_len] },
+                    Stream::RefStream( stream ) => { stream }
+                };
+                
+                // Return the next item in the stream, if the beginning of the stream
+                //      has been reached
+                if self.stream_index < stream.len() {
+                    Some( &stream[ self.stream_index - 1 ] )
+                }
+                else { None }    
+            }
+            else { None }
+        }    
+        else { None }    
+    }
+    
+
 }
 

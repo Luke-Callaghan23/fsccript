@@ -1,13 +1,13 @@
 pub mod type_implementations {
     use std::fmt;
-    use crate::parser::types::{
+    use crate::types::types::{
         CompilationTarget,
         FileContent,
         CompilableSection
     };
     
     /// Implementation of Display Trait for a CompilationTarget
-    impl  fmt::Display for CompilationTarget <'static> {
+    impl <'a>  fmt::Display for CompilationTarget <'a> {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             write!(f, "IN       : '{}'\nOUT      : '{}'\nRAW SIZE : {} characters\n", 
                 self.input_path, 
@@ -18,7 +18,7 @@ pub mod type_implementations {
     }
     
     /// Implementation of Display Trait for FileContent
-    impl fmt::Display for FileContent <'static> {
+    impl <'a> fmt::Display for FileContent <'a> {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             write!(f, "{}", 
                 match self {
@@ -32,7 +32,7 @@ pub mod type_implementations {
     }
 
     /// Implementation of Display Trait for Conpilable
-    impl fmt::Display for CompilableSection<'static> {
+    impl <'a> fmt::Display for CompilableSection<'a> {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             write!(f, "{}", std::str::from_utf8(self.content).unwrap())
         }

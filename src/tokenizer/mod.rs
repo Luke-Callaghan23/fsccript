@@ -1,4 +1,5 @@
 pub mod tokenizer;
 pub mod tests;
 pub mod token_types;
-pub mod token_stream;
+pub mod types;
+pub mod traverse_token_stream;

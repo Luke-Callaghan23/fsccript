@@ -1,18 +1,9 @@
-use regex::Regex;
-
-use crate::transpiler::types::{
+use crate::{tokenizer::{token_types::TokenOfInterest, types::{TokenOrStream, TokenStream}}, transpiler::types::{
     CompilationInfo, 
     CompilationInstructions, 
     CompileType, 
     Info
-};
-// use crate::parser::enclosing_pairs::{
-//     find_enclosing_pair, 
-//     split_from_indeces,
-//     EnclosingSplit, 
-//     EnclosingPairs
-// };
-// use crate::parser::parser::parser::{skip_for_character};
+}};
 
 
 
@@ -25,19 +16,24 @@ pub fn implement_switch () -> CompilationInstructions {
     }
 }
 
-pub struct SwitchInfo {
+pub struct SwitchInfo <'a> {
     pub key_parenthesis: (usize, usize),
     pub surrounding_curlies: (usize, usize),
+    pub stream: TokenStream<'a>
 }
 
 
-fn check_switch (data: &[u8], start_index: usize) -> bool {
-    // If the data 
-    data.len() - start_index >= 5 && 
-    &data[start_index..start_index+6] == b"switch"
+fn check_switch <'a> (token_stream: &'a TokenStream<'a>) -> bool {
+    if let Some ( cur ) = token_stream.current() {
+        if let TokenOrStream::Token( tok ) = cur {
+            tok.token == TokenOfInterest::Switch
+        }
+        else { false }
+    }
+    else { false }
 }
 
-fn parse_switch <'a> (data: &'a [u8]) -> Option<CompilationInfo <'a>> {
+fn parse_switch <'a> (token_stream: &'a TokenStream<'a>) -> Option<CompilationInfo <'a>> {
 
     // // Index from which we will start searching for the opening parenthesis for the switch
     // //      key -- starts at 6 because "switch" is 6 characters, and indexes start at 0
@@ -141,34 +137,6 @@ fn parse_switch <'a> (data: &'a [u8]) -> Option<CompilationInfo <'a>> {
     None
 }
 
-fn transpile_switch (data: &[u8], compilation_info: Info) -> &[u8] {
+fn transpile_switch <'a> (data: &'a [u8], compilation_info: Info) -> &'a [u8] {
     b""
-}
-
-#[cfg(test)]
-pub mod test {
-    use super::check_switch;
-
-    #[test]
-    fn test_check_switch () {
-        assert_eq!(check_switch(b"switch ", 0), true);
-    }
-    
-    #[test]
-    fn test_check_switch_2 () {
-        assert_eq!(check_switch(b"swit", 0), false);
-    }
-    
-    
-    #[test]
-    fn test_check_switch_3 () {
-        assert_eq!(check_switch(b"some arbitrary stuff before the switch switch", 39), true);
-    }
-    
-    
-    #[test]
-    fn test_check_switch_4 () {
-        assert_eq!(check_switch(b"some arbitrary stuff before the switch switch and some arbitrary stuff after the switch", 39), true);
-    }
-    
 }
