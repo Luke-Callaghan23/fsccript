@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TokenStream <'a> {
     stream:       Stream <'a>,
     stream_index: usize,
@@ -13,13 +13,13 @@ pub struct TokenStream <'a> {
 }
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Stream <'a> {
     RefStream ( &'a [TokenOrStream <'a>] ),
     Stream ( Vec<TokenOrStream <'a>> ),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum TokenOrStream <'a> {
     Token ( Token ),
     TokenStream ( TokenStream <'a> )
@@ -32,6 +32,29 @@ pub struct Token {
     pub token: TokenOfInterest,
     pub start: usize,
     pub end: usize,
+}
+
+impl <'a> TokenOrStream<'a> {
+    pub fn start (&self) -> usize {
+        match self {
+            TokenOrStream::Token( tok ) => {
+                tok.start
+            }
+            TokenOrStream::TokenStream( stream ) => {
+                stream.start
+            }
+        }
+    }
+    pub fn end (&self) -> usize {
+        match self {
+            TokenOrStream::Token( tok ) => {
+                tok.end
+            }
+            TokenOrStream::TokenStream( stream ) => {
+                stream.end
+            }
+        }
+    }
 }
 
 use std::fmt;
@@ -56,6 +79,24 @@ impl <'a> std::fmt::Display for TokenStream<'a>  {
                 }
             }
         });
+
+
+        write!(f, "")
+    }
+}
+
+impl <'a> std::fmt::Display for TokenOrStream<'a>  {
+    #[allow(unused_must_use)]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        
+        match self {
+            TokenOrStream::Token(token) => {
+                write!(f, "Token ( {:?} )\n", token.token);
+            }
+            TokenOrStream::TokenStream(stream) => {
+                write!(f, "Stream {:?}", stream.first());
+            }
+        }
 
 
         write!(f, "")
@@ -105,15 +146,27 @@ impl <'a> TokenStream <'a> {
     pub fn add_token (&mut self, token: TokenOrStream<'a>) -> usize {
         match &mut self.stream {
             Stream::Stream( stream ) => {
+                
+                // Check if the token is a comment token
+                let token_type = TokenStream::get_token_type(Some( &token ));
+                if token_type == TokenOfInterest::SingleLineCommentOpen
+                || token_type == TokenOfInterest::MultiLineCommentOpen {
+                    // If it's a comment token, we just don't add it, lol
+                    return self.end;
+                }
+                // if let TokenOrStream::TokenStream( stream ) = &token {
+                //     let token_type= stream.current_token_type();
+                // }
+                
+                
+                
                 // Increment the end of self
                 self.end = match &token {
                     TokenOrStream::Token( token ) => token.end,
                     TokenOrStream::TokenStream( token_stream ) => token_stream.end,
                 };
-                
-                // if let TokenOrStream::TokenStream( ref mut tok  ) = &'atoken {
-                //     tok.outer = Some( &self );
-                // }
+
+
 
                 // Push the token to the end of self's stream
                 stream.push(token);
@@ -197,12 +250,17 @@ impl <'a> TokenStream <'a> {
     /// * `Option<&TokenStream <'a>>` -- The stream that we stepped into, or None if
     ///     there was no Stream to step into
     ///
-    pub fn step_into (&'a self) -> Option<&TokenStream <'a>> {
-        let cur = self.current();
-        if let Some ( cur ) = cur {
-            match cur {
-                TokenOrStream::Token ( _ ) => None,
-                TokenOrStream::TokenStream ( stream ) => Some( &stream ) 
+    pub fn step_into (self) -> Option<TokenStream <'a>> {
+
+        if self.stream_index < self.stream_len {
+            let stream = match &self.stream {
+                Stream::Stream( stream ) => { &stream[self.stream_index] },
+                Stream::RefStream( stream ) => { &stream[self.stream_index] }
+            };
+
+            match stream {
+                TokenOrStream::Token( _ ) => None,
+                TokenOrStream::TokenStream( stream ) => Some( stream.clone() )
             }
         }
         else { None }
@@ -267,6 +325,29 @@ impl <'a> TokenStream <'a> {
         }    
         else { None }    
     }
+
+
+    /// # TokenStream::current_token_type -- 
+    ///
+    /// 
+    ///
+    /// ## Returns -- 
+    ///
+    pub fn get_token_type (token_or_stream: Option<&TokenOrStream>) -> TokenOfInterest {
+        // let cur = self.current();
+        if let Some ( token_or_stream ) = token_or_stream {
+            match token_or_stream {
+                TokenOrStream::Token( token ) => {
+                    token.token
+                },
+                TokenOrStream::TokenStream( stream ) => {
+                    TokenStream::get_token_type(stream.current())
+                }
+            }
+        }
+        else { TokenOfInterest::None }
+    }
+
     
     /// # TokenStream::next -- 
     ///
@@ -280,12 +361,12 @@ impl <'a> TokenStream <'a> {
     pub fn next (&mut self) -> Option<&TokenOrStream<'a>> {
         if self.stream_index < self.stream_len {
 
+            // Getting the stream as a slice -- either by taking the Stream::RefStream of self, or taking
+            //      a 0..n slice of the Stream::Stream slice
             let stream = match &self.stream {
                 Stream::Stream( stream ) => { &stream[0..self.stream_len] },
                 Stream::RefStream( stream ) => { stream }
             };
-
-            
             
             if !self.at_start {
                 // Getting the byte-length of the current token
@@ -302,8 +383,9 @@ impl <'a> TokenStream <'a> {
                 self.stream_index += 1;
             }
             else {
-                // .next() should return the first element if .next() has never been called
-                //      before, so a .at_start bool is being used as a hacky workaround :)
+                // .next() should return the first element element of a TokenStream,
+                //      if .next() has never been called before, so a .at_start bool 
+                //      is being used as a hacky workaround :) be
                 self.at_start = false;
             }
             
@@ -359,27 +441,6 @@ impl <'a> TokenStream <'a> {
     }
     
 
-    pub fn peek_prev (&'a mut self) -> Option<&TokenOrStream<'a>> {
-        if self.stream_index < self.stream_len {
-            if self.stream_index > 0 {
-                
-                let stream = match &self.stream {
-                    Stream::Stream( stream ) => { &stream[0..self.stream_len] },
-                    Stream::RefStream( stream ) => { stream }
-                };
-                
-                // Return the next item in the stream, if the beginning of the stream
-                //      has been reached
-                if self.stream_index < stream.len() {
-                    Some( &stream[ self.stream_index - 1 ] )
-                }
-                else { None }    
-            }
-            else { None }
-        }    
-        else { None }    
-    }
-    
 
 }
 

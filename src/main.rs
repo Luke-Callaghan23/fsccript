@@ -88,11 +88,11 @@ fn main () {
     let tokenized = tokenize_targets(targets, &token_lookup);
 
     // 2. parse all files, store as CompilationTargets in 'parsed_targets'
-    let parsed_target = parse_files(tokenized, &compilation_instructions, &token_lookup);
+    let parsed_target = parse_files(tokenized, &compilation_instructions);
 
 
-    // // 3. transpile all parsed files, store in transpiled in 'transpiled'
-    // let transpiled_targets = transpile_all_targets(parsed_target);
+    // 3. transpile all parsed files, store in transpiled in 'transpiled'
+    let transpiled_targets = transpile_all_targets(parsed_target, &compilation_instructions);
 
     // // 4.
     // write_all(transpiled_targets);

@@ -1,4 +1,8 @@
-use crate::tokenizer::{token_types::TokenOfInterest, types::{TokenOrStream, TokenStream}};
+use crate::{tokenizer::token_types::TokenOfInterest, types::types::CompilableSection};
+use crate::tokenizer::types::{
+    TokenOrStream, 
+    TokenStream
+};
 use crate::transpiler::types::{
     CompilationInfo, 
     CompilationInstructions, 
@@ -15,8 +19,7 @@ pub fn implement_if () -> CompilationInstructions {
     }
 }
 
-pub struct IfInfo <'a>{
-    pub stream: TokenStream<'a>
+pub struct IfInfo {
 
 }
 
@@ -31,11 +34,11 @@ fn check_if <'a> (token_stream: &'a TokenStream<'a>) -> bool {
     else { false }
 }
 
-fn parse_if <'a> (token_stream: &'a TokenStream<'a>) -> Option<CompilationInfo<'a>> {
+fn parse_if <'a> (token_stream: &'a mut TokenStream<'a>) -> Option<CompilationInfo> {
     // Some(CompilationInfo{ fjs_block: b"", remaining: b"", comp_info: Info::None })
     None
 }
 
-fn transpile_if <'a> (data: &'a [u8], comp_info: Info) -> &'a [u8] {
-    b""
+fn transpile_if <'a> (data: CompilableSection<'a>) -> String{
+    String::from("")
 }

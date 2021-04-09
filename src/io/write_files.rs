@@ -1,7 +1,8 @@
 use crate::types::types::*;
 use std::fs;
 use std::io::prelude::*;
-use itertools::interleave;
+
+use crate::transpiler::transpiler;
 
 pub fn write_all (compiled: Vec<CompilationTarget>) {
     for target in compiled {
@@ -19,9 +20,9 @@ fn write_single (compiled_file: CompilationTarget) {
     if let Some ( file ) = file {
         println!("File at '{}' successfully created!", out_path);
         match compiled_file.contents {
-            FileContent::Transpiled( parsed ) => {
-                let vanilla_len  = parsed.vanilla_sections.len();
-                let compiled_len = parsed.compiled_sections.len();
+            FileContent::Transpiled( transpiled ) => {
+                let vanilla_len  = transpiled.vanilla_sections.len();
+                let compiled_len = transpiled.compiled_sections.len();
 
                 if vanilla_len != compiled_len + 1 {
                     // For the file write to work, the length of non-compilable js snippets must be exactly one more
@@ -34,26 +35,12 @@ fn write_single (compiled_file: CompilationTarget) {
                         vanilla_len,
                         compiled_len
                     );
-                    return;
+                    // return;
                 }
 
-                // Getting the final string of transpiled .js code by interleaving the 
-                //      vanilla .js and the transpiled .js, and folding into a single 
-                //      String
-                let compiled = (
-                    // Interleave the vanilla snippets with the transpiled snippets
-                    interleave (
-                        parsed.vanilla_sections, 
-                        parsed.compiled_sections
-                    )
-                    // Fold the interleaved iterator into a single string
-                    .fold(String::from(""), | mut acc, x | {
-                        acc.push_str(std::str::from_utf8(x).unwrap());
-                        acc
-                    })
-                );
+                // 
+                let compiled = transpiler::construct_file(transpiled);
 
-                
                 // Write to the file
                 write_to_file(file, compiled, out_path);
                 
@@ -67,9 +54,9 @@ fn write_single (compiled_file: CompilationTarget) {
             }
         }
     }
-    
-    
 }
+
+
 
 fn make_file (path: &str) -> Option<fs::File> {
     let file = fs::File::create (path);

@@ -1,4 +1,4 @@
-use crate::{tokenizer::types::TokenStream, transpiler::implementations::{fscript_if, fscript_switch}};
+use crate::{tokenizer::types::TokenStream, transpiler::implementations::{fscript_if, fscript_switch}, types::types::CompilableSection};
 
 /// Enumeration of the types of compilation that can occur
 /// Obviously, this enum will be expanded in future, after more releases
@@ -9,15 +9,18 @@ pub enum CompileType {
 }
 
 
-pub struct CompilationInfo<'a> {
-    pub rem_stream: TokenStream<'a>,
-    pub compilation_stream: TokenStream<'a>,
-    pub comp_info: Info<'a>
+pub struct CompilationInfo {
+    pub full_skips: usize,
+    pub transpile_skips: usize,
+    pub start: usize,
+    pub end: usize,
+    // pub rem_stream: TokenStream<'a>,
+    pub comp_info: Info
 }
 
-pub enum Info <'a> {
-    IfInfo   (     fscript_if::IfInfo<'a>     ),
-    SwitchInfo ( fscript_switch::SwitchInfo<'a> ),
+pub enum Info {
+    IfInfo     (     fscript_if::IfInfo     ),
+    SwitchInfo ( fscript_switch::SwitchInfo ),
     None
 }
 
@@ -43,8 +46,8 @@ pub enum Info <'a> {
 pub struct CompilationInstructions {
     pub comp_type:      CompileType,
     pub check:          Box<dyn for<'a> Fn(&'a TokenStream<'a>) -> bool>,
-    pub parse:          Box<dyn for<'a> Fn(&'a TokenStream<'a>) -> Option<CompilationInfo<'a>>>,    
-    pub transpile:      Box<dyn for<'a> Fn(&'a [u8], Info) -> &'a [u8]>
+    pub parse:          Box<dyn for<'a> Fn(&'a mut TokenStream<'a>) -> Option<CompilationInfo>>,    
+    pub transpile:      Box<dyn for<'a> Fn(CompilableSection<'a>) -> String>
 }
 
 pub type InstructionsSet = [CompilationInstructions; 2 /* <-- increment this */];

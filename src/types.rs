@@ -89,7 +89,7 @@ pub mod types {
     pub struct TranspiledFile <'a> {
         pub size:                usize,                    // size of the raw file 
         pub vanilla_sections:    Vec<&'a [u8]>,              // vector of the sections of vanilla code that will be pasted directly into the output file 
-        pub compiled_sections:   Vec<&'a [u8]>               // vector of the .fjs expressions that will be compiled before being pasted into the output file
+        pub compiled_sections:   Vec<String>               // vector of the .fjs expressions that will be compiled before being pasted into the output file
     }
     
     /// # struct parser::types::CompilableSection
@@ -99,9 +99,11 @@ pub mod types {
     /// Includes the type of compilation, and the snippet of code that the compilation
     ///         on which the compilation will occur
     pub struct CompilableSection<'a> {
-        pub comp_instructions: CompilationInstructions,    // The type of compilation that will occur
+        // pub comp_instructions: &'a CompilationInstructions,    // The type of compilation that will occur
         pub content: &'a [u8],                             // The raw .fjs code that will be compiled into vanilla .js
-        pub compilation_info: Info <'a>,                        // Information passed from the parser to the compilable about the .fjs element
+        pub stream: TokenStream<'a>,
+        pub compilation_info: Info,                        // Information passed from the parser to the compilable about the .fjs element
+        pub instruction_index: usize,
     }
     
     

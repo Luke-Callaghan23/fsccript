@@ -1,11 +1,15 @@
+use std::{borrow::Borrow, collections::VecDeque};
+
 use crate::{tokenizer::{token_types::TokenOfInterest, types::{TokenOrStream, TokenStream}}, transpiler::types::{
     CompilationInfo, 
     CompilationInstructions, 
     CompileType, 
     Info
-}};
+}, types::types::CompilableSection};
 
 
+
+use crate::transpiler::transpiler;
 
 pub fn implement_switch () -> CompilationInstructions {
     CompilationInstructions {
@@ -16,10 +20,9 @@ pub fn implement_switch () -> CompilationInstructions {
     }
 }
 
-pub struct SwitchInfo <'a> {
-    pub key_parenthesis: (usize, usize),
-    pub surrounding_curlies: (usize, usize),
-    pub stream: TokenStream<'a>
+pub struct SwitchInfo {
+    parens: (usize, usize),
+    curlies: (usize, usize)
 }
 
 
@@ -33,110 +36,151 @@ fn check_switch <'a> (token_stream: &'a TokenStream<'a>) -> bool {
     else { false }
 }
 
-fn parse_switch <'a> (token_stream: &'a TokenStream<'a>) -> Option<CompilationInfo <'a>> {
 
-    // // Index from which we will start searching for the opening parenthesis for the switch
-    // //      key -- starts at 6 because "switch" is 6 characters, and indexes start at 0
-    // let start_index = 6usize;
+fn parse_switch<'a> (token_stream: &'a mut TokenStream<'a>) -> Option<CompilationInfo> {
+    // We can assume that since this function has been called, the current token in the parameter token_stream
+    //      is a TokenOfInterest::Switch token
+    // The next token should be a parenthesis token stream, and the token after that should be a curly brackets
+    //      theme
 
-    // // Skip ahead over comments and whitespace, returns Some( index ) of
-    // //      the opening parenthesis -- or None, if there is an invalid
-    // //      character between 'switch' and '('
-    // let parenthesis = skip_for_character (
-    //     data, 
-    //     start_index, 
-    //     '(', 
-    //     pairs_lookup
-    // );
+    let switch = token_stream.current().unwrap();
+    let start = switch.start();
 
-    // if let Some ( p_open_index ) = parenthesis {
+    token_stream.next();
 
-    //     // Set parenthesis_open
-    //     let parenthesis_open = p_open_index;
+    let parens_token = token_stream.next();
+    let parens_type = TokenStream::get_token_type(parens_token);
+    
+    if parens_type  == TokenOfInterest::OpenParen {
+
         
-    //     // Getting the index of the closing parenthesis
-    //     let parenthesis_close = find_enclosing_pair (
-    //         data, 
-    //         '(', 
-    //         parenthesis_open, 
-    //         pairs_lookup
-    //     ).0;
-    
-    //     if parenthesis_close == 0 {
-    //         // TODO: insert error message -- no closing parenthesis to 'switch(...'
-    //         return None;
-    //     }
-
-    //     // Storing opening and closing parenthesis
-    //     let key_parentheses = (
-    //         parenthesis_open, 
-    //         parenthesis_close
-    //     );
-    
-    //     // Now, searching for opening / closing '{' '}' brackets
-    //     let start_index = parenthesis_close + 1;
-    
-    //     // Skip ahead over comments and whitespace, returns Some( index ) of
-    //     //      the opening curly bracket -- or None, if there is an invalid
-    //     //      character between ')' and '{'
-    //     let curly = skip_for_character (
-    //         data, 
-    //         start_index, 
-    //         '{', 
-    //         pairs_lookup
-    //     );
-    
-    //     if let Some( c_open_index ) = curly {
-
-    //          // Set parenthesis_open
-    //         let curly_open = c_open_index;
+        if let Some( parens_token ) = parens_token {
             
-    //         // Getting the index of the closing curly
-    //         let curly_close = find_enclosing_pair (
-    //             data, 
-    //             '{', 
-    //             curly_open, 
-    //             pairs_lookup
-    //         ).0;
-        
-    //         if curly_close == 0 {
-    //             // TODO: insert error message -- no closing parenthesis to 'switch(...){...'
-    //             return None;
-    //         }
-
-    //         // Storing opening and closing curly
-    //         let surrounding_curlies = &(
-    //             curly_open, 
-    //             curly_close
-    //         );
-
-    //         let curly_split = split_from_indeces(data, *surrounding_curlies);
-
-
-    //         let cases = curly_split.middle;
-
-
-    //         // switch:
-    //         //      ((case (.*):|default:)(\{.*\}|\[.*\]|\(.*\))*)
-
-
-    //         // Info::SwitchInfo(SwitchInfo{ key_parenthesis: key_parentheses, surrounding_curlies: *surrounding_curlies});
-
-
-    //         Some (CompilationInfo{ fjs_block: b"", remaining: data, comp_info: Info::None })
-    //     }
-    //     else {
-    //         // TODO: insert error message -- invalid character between 'switch(...)' and '{'
-    //         None
-    //     }
-    // }
-    // else { 
-    //     // TODO: insert error message -- invalid character between 'switch' and '('
-    //     None 
-    // }
-    None
+            let parens_start = parens_token.start();
+            let parens_end   = parens_token.end();
+            
+            let curlies_token = token_stream.next();
+            let curlies_type = TokenStream::get_token_type(curlies_token);
+            
+            if curlies_type  == TokenOfInterest::OpenCurly {
+                
+                if let Some( curlies_token ) = curlies_token {
+                    
+                    let curlies_start = curlies_token.start();
+                    let curlies_end   = curlies_token.end();
+                    
+                    Some (CompilationInfo {
+                        transpile_skips: 2,
+                        full_skips: 3,
+                        start: start,
+                        end: curlies_end,
+                        comp_info: Info::SwitchInfo (
+                            SwitchInfo {
+                                parens:  (parens_start, parens_end),
+                                curlies: (curlies_start, curlies_end),
+                            }
+                        )
+                    })
+                }
+                else { None }
+            } 
+            else { None }
+        }
+        else { None }
+    }
+    else { None }
 }
 
-fn transpile_switch <'a> (data: &'a [u8], compilation_info: Info) -> &'a [u8] {
-    b""
+fn transpile_switch<'a> (comp_section: CompilableSection<'a>) -> String {
+    let data = comp_section.content;
+    let switch_info = comp_section.compilation_info;
+    if let Info::SwitchInfo( switch_info ) = switch_info {
+        match comp_section.stream.step_into() {
+            Some ( mut stream ) => {
+
+                let parens  = switch_info.parens;
+                let curlies = switch_info.curlies;
+    
+                println!("{}", std::str::from_utf8(&data[parens.0+1..parens.1-1]).unwrap());
+                println!("{}", std::str::from_utf8(&data[curlies.0+1..curlies.1-1]).unwrap());
+    
+    
+                let paren_data = &data[parens.0+1..parens.1-1];
+                let curly_data = &data[curlies.0+1..curlies.1-1];
+
+                let mut insert_return: VecDeque<usize> = VecDeque::new();
+
+                while !stream.is_empty() {
+
+                    let tok = stream.current().unwrap();
+
+                    println!("{}", stream.current().unwrap());
+
+                    // todo find places to add 'return'
+
+                    
+
+
+                    stream.next();
+                }
+
+    
+                match std::str::from_utf8(data) {
+                    Ok( str_data ) => {
+                        // Wrapping the return string as a js expression IIFIE
+                        transpiler::wrap_as_expression(
+                            // insert "return " strings in every specified area
+                            transpiler::insert_returns(
+                                str_data, 
+                                insert_return
+                            )
+                        )
+                    },    
+                    Err( err ) => {
+                        String::from("oopsies!")
+                    }    
+                }    
+            }
+            None => String::from("oopsies!"),
+        }
+    }
+    else { String::from("oopsies!") }
+    
+    /*
+    // Getting the parenthesis as a spliced token stream
+    let parens = 
+        if let TokenOrStream::TokenStream( stream ) = parens_token {
+            stream.splice_stream()
+        } else { None }
+    .unwrap();
+    // Getting the curlies stream  as a spliced token stream
+    let mut curlies = 
+        if let TokenOrStream::TokenStream( stream ) = curlies_token {
+            stream.splice_stream()
+        } else { None }
+    .unwrap();
+    */
+    
+    // let mut token_index: usize = 1;          // index of the current token in the curlies stream
+    // let mut cases: Vec<usize> = Vec::new();   // indeces of all cases or defaults in the curlies token stream
+    
+    // let _open = curlies.next();
+    
+    // // Gathering the case statemesnts in the curly brackets 
+    // while !curlies.is_empty() {
+        
+    //     let cur = curlies.next();
+    
+    //     let tok_type = TokenStream::get_token_type(cur);
+    //     if tok_type == TokenOfInterest::Case 
+    //     || tok_type == TokenOfInterest::Default {
+    //         cases.push(token_index);
+    //     }
+    //     // curlies.next();
+    //     token_index += 1
+    // }
+    
+    // if cases.len() >= 1 {
+    // }
+    // else { None }
 }
